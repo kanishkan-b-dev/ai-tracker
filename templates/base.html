@@ -218,12 +218,12 @@
             font-weight: 700 !important;
         }
 
-        /* 3. Navigation Items (Smooth 3D Zoom on Hover, No Black Border, No Shadow) */
+        /* 3. Navigation Items (Prominent Smooth 3D Zoom on Hover, No Black Border, No Shadow) */
         .nav-item {
             display: flex;
             align-items: center;
             padding: 0.75rem 1rem;
-            margin-bottom: 0.45rem;
+            margin-bottom: 0.5rem;
             border-radius: 0.65rem;
             color: #18181b !important;
             background: transparent !important;
@@ -233,6 +233,7 @@
             font-weight: 600;
             box-shadow: none !important;
             transform: scale(1) translateZ(0);
+            transform-origin: left center;
             backface-visibility: hidden;
             will-change: transform;
             transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.28s ease, color 0.28s ease !important;
@@ -250,11 +251,11 @@
             background: #ede8dc !important;
             border-color: transparent !important;
             box-shadow: none !important;
-            transform: scale(1.04) translateX(3px) translateZ(0) !important;
+            transform: scale(1.08) translateX(4px) translateZ(0) !important;
         }
 
         .nav-item:hover i {
-            transform: scale(1.15);
+            transform: scale(1.22);
         }
 
         .nav-item.active {
@@ -264,6 +265,7 @@
             font-weight: 700 !important;
             box-shadow: none !important;
             transform: scale(1.02) translateZ(0) !important;
+            transform-origin: left center;
         }
 
         .nav-item.active:hover {
@@ -271,7 +273,7 @@
             background: #000000 !important;
             border-color: #000000 !important;
             box-shadow: none !important;
-            transform: scale(1.04) translateX(3px) translateZ(0) !important;
+            transform: scale(1.08) translateX(4px) translateZ(0) !important;
         }
 
         .nav-item.active i,
