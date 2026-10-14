@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Search - My Tracker{% endblock %}
+{% block page_title %}Search{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto fade-in">
+    <div class="card p-8 mb-6">
+        <div class="flex items-center space-x-3 mb-6 pb-4 border-b-2 border-black">
+            <div class="w-12 h-12 bg-[#f4efe6] border-2 border-black rounded-xl flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                <i class="fas fa-search text-black text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-black">Search Logs & Jobs</h1>
+                <p class="text-sm text-gray-700 font-medium">Find learning entries and job applications by keywords</p>
+            </div>
+        </div>
+
+        <form method="get" class="mt-4">
+            <div class="flex space-x-3">
+                <div class="flex-1">
+                    <input type="text" 
+                           name="query" 
+                           value="{{ query }}" 
+                           placeholder="Search across title, notes, companies, or roles..."
+                           class="input text-base">
+                </div>
+                <button type="submit" class="btn-primary cursor-pointer">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if query %}
+        <div class="space-y-6">
+            <!-- Jobs Matches -->
+            {% if jobs %}
+                <div class="card p-6">
+                    <h2 class="text-base font-bold text-black mb-4 pb-2 border-b-2 border-black flex items-center gap-2">
+                        <i class="fas fa-briefcase text-black"></i>
+                        <span>Matching Job Applications ({{ jobs.count }})</span>
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b-2 border-black">
+                                    <th class="py-3 px-4 text-xs font-bold text-black uppercase tracking-wider">Organization</th>
+                                    <th class="py-3 px-4 text-xs font-bold text-black uppercase tracking-wider">Role</th>
+                                    <th class="py-3 px-4 text-xs font-bold text-black uppercase tracking-wider">Status</th>
+                                    <th class="py-3 px-4 text-xs font-bold text-black uppercase tracking-wider text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in jobs %}
+                                    <tr class="border-b border-black/15 hover:bg-[#faf8f3] transition-colors duration-150">
+                                        <td class="py-3 px-4 text-sm text-black font-bold">{{ job.company_name }}</td>
+                                        <td class="py-3 px-4 text-sm text-black font-medium">{{ job.job_title }}</td>
+                                        <td class="py-3 px-4">
+                                            <span class="badge {{ job.status_badge_class }}">{{ job.status }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <a href="/my-jobs/edit/{{ job.pk }}/" class="text-black hover:opacity-70 text-xs font-bold">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Learning Entries Matches -->
+            {% if entries %}
+                <div class="card p-6">
+                    <h2 class="text-base font-bold text-black mb-4 pb-2 border-b-2 border-black flex items-center gap-2">
+                        <i class="fas fa-book text-black"></i>
+                        <span>Matching Learning Entries ({{ entries.count }})</span>
+                    </h2>
+                    <div class="space-y-3">
+                        {% for entry in entries %}
+                            <a href="/log/{{ entry.pk }}/" class="block card p-4 hover:bg-[#faf8f3] transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <span class="text-xs text-gray-600 font-mono font-bold">#{{ entry.pk }} • {{ entry.date|date:"M d, Y" }}</span>
+                                        <h3 class="text-sm font-bold text-black mt-1">{{ entry.title }}</h3>
+                                        <p class="text-xs text-gray-700 mt-1 line-clamp-2 font-medium">{{ entry.notes }}</p>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-black text-xs ml-4"></i>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if not jobs and not entries %}
+                <div class="card p-12 text-center">
+                    <div class="w-16 h-16 bg-[#f4efe6] border-2 border-black rounded-full flex items-center justify-center mx-auto mb-4 shadow-[2px_2px_0px_#000000]">
+                        <i class="fas fa-search text-2xl text-black"></i>
+                    </div>
+                    <p class="text-base font-bold text-black">No results found for "{{ query }}"</p>
+                    <p class="text-xs text-gray-600 mt-1 font-medium">Try another search term or keyword.</p>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="card p-12 text-center">
+            <div class="w-16 h-16 bg-[#f4efe6] border-2 border-black rounded-full flex items-center justify-center mx-auto mb-4 shadow-[2px_2px_0px_#000000]">
+                <i class="fas fa-keyboard text-2xl text-black"></i>
+            </div>
+            <p class="text-lg font-bold text-black mb-1">Enter a search term to get started</p>
+            <p class="text-sm text-gray-600 font-medium">Search across all your learning entries and job applications</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

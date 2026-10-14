@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ entry.title }} - My Tracker{% endblock %}
+{% block page_title %}Learning Entry{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto fade-in">
+    <div class="mb-4">
+        <a href="/dashboard/" class="text-xs font-bold text-black hover:opacity-70 inline-flex items-center gap-1.5 py-1 px-2.5 rounded border border-black bg-white shadow-[1px_1px_0px_#000000]">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    <div class="card p-8">
+        <div class="flex items-center justify-between pb-4 mb-6 border-b-2 border-black">
+            <div>
+                <span class="text-xs text-gray-700 font-mono font-bold">#{{ entry.pk }} • {{ entry.date|date:"F d, Y" }}</span>
+                <h1 class="text-2xl font-bold text-black mt-1">{{ entry.title }}</h1>
+            </div>
+            {% if entry.code_language %}
+                <span class="badge font-bold">{{ entry.code_language|upper }}</span>
+            {% endif %}
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <h2 class="text-xs font-bold text-black uppercase tracking-wider mb-2">Notes</h2>
+                <div class="text-sm text-black leading-relaxed whitespace-pre-line bg-[#fbf9f5] border-2 border-black p-4 rounded-xl shadow-[1px_1px_0px_#000000]">
+                    {{ entry.notes }}
+                </div>
+            </div>
+
+            {% if entry.code_snippet %}
+                <div>
+                    <h2 class="text-xs font-bold text-black uppercase tracking-wider mb-2">Code Snippet</h2>
+                    <pre class="language-{{ entry.code_language }}"><code class="language-{{ entry.code_language }}">{{ entry.code_snippet }}</code></pre>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

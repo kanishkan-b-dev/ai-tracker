@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - My Learning Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-swift.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-kotlin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-r.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-matlab.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-powershell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup-templating.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fafafa; color: #18181b; transition: background 0.3s, color 0.3s; }
+        .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 260px; background: #ffffff; border-right: 1px solid #e5e7eb; z-index: 40; transition: all 0.3s; }
+        .sidebar-logo { padding: 1.5rem 1.25rem; border-bottom: 1px solid #e5e7eb; }
+        .sidebar-nav { padding: 1rem 0.75rem; }
+        .nav-item { display: flex; align-items: center; padding: 0.75rem 1rem; margin-bottom: 0.25rem; border-radius: 0.5rem; color: #52525b; text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; }
+        .nav-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-item.active { background: #f4f4f5; color: #18181b; font-weight: 600; }
+        .nav-item i { width: 20px; margin-right: 0.75rem; font-size: 0.875rem; }
+        .top-nav { position: fixed; top: 0; left: 260px; right: 0; height: 64px; background: #ffffff; border-bottom: 1px solid #e5e7eb; z-index: 30; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; transition: all 0.3s; }
+        .main-content { margin-left: 260px; margin-top: 64px; padding: 2rem; min-height: calc(100vh - 64px); }
+        .card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); transition: all 0.3s; }
+        .card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .btn-primary { background: #18181b; color: #ffffff; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+        .btn-primary:hover { background: #27272a; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .btn-secondary { background: #ffffff; color: #52525b; padding: 0.625rem 1.25rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; border: 1px solid #e5e7eb; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+        .btn-secondary:hover { background: #f4f4f5; }
+        .input { width: 100%; padding: 0.625rem 0.875rem; background: #ffffff; border: 1px solid #d4d4d8; border-radius: 0.5rem; color: #18181b; font-size: 0.875rem; transition: all 0.2s; }
+        .input:focus { outline: none; border-color: #18181b; box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.1); }
+        textarea.input { min-height: 120px; font-family: 'Inter', sans-serif; resize: vertical; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #fafafa; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
+        pre[class*="language-"] { border-radius: 0.5rem; border: 1px solid #e5e7eb; font-size: 0.875rem; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .top-nav { left: 0; }
+            .main-content { margin-left: 0; padding: 1rem; }
+        }
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 35; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+        .stat-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.2s; }
+        .stat-card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transform: translateY(-2px); }
+        .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; background: #f4f4f5; color: #52525b; border: 1px solid #e5e7eb; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 600; color: #52525b; }
+        .login-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        
+        /* Dark Mode Styles - Complete Color Inversion */
+        body.dark-mode { background: #050505; color: #e7e7e4; }
+        body.dark-mode .sidebar { background: #000000; border-right: 1px solid #1a1814; }
+        body.dark-mode .sidebar-logo { border-bottom: 1px solid #1a1814; }
+        body.dark-mode .sidebar-logo a { color: #ffffff; }
+        body.dark-mode .sidebar-logo .bg-black { background: #ffffff !important; }
+        body.dark-mode .sidebar-logo .text-white { color: #000000 !important; }
+        body.dark-mode .nav-item { color: #ada4a4; }
+        body.dark-mode .nav-item:hover { background: #0b0b0a; color: #e7e7e4; }
+        body.dark-mode .nav-item.active { background: #0b0b0a; color: #e7e7e4; }
+        body.dark-mode .top-nav { background: #000000; border-bottom: 1px solid #1a1814; }
+        body.dark-mode .card { background: #000000; border: 1px solid #1a1814; box-shadow: 0 1px 3px 0 rgba(255, 255, 255, 0.1); }
+        body.dark-mode .card:hover { box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1); }
+        body.dark-mode .btn-primary { background: #e7e7e4 !important; color: #000000 !important; border: none; }
+        body.dark-mode .btn-primary:hover { background: #d8d8d5 !important; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1); }
+        body.dark-mode .btn-primary span,
+        body.dark-mode .btn-primary i { color: #000000 !important; }
+        body.dark-mode button.btn-primary,
+        body.dark-mode a.btn-primary { color: #000000 !important; }
+        body.dark-mode .btn-secondary { background: #000000; color: #ada4a4; border: 1px solid #1a1814; }
+        body.dark-mode .btn-secondary:hover { background: #0b0b0a; color: #e7e7e4; }
+        
+        /* All input types in dark mode - match Notes textarea */
+        body.dark-mode .input,
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="email"],
+        body.dark-mode input[type="password"],
+        body.dark-mode input[type="search"],
+        body.dark-mode input[type="url"],
+        body.dark-mode input[type="date"],
+        body.dark-mode input[type="time"],
+        body.dark-mode input[type="number"],
+        body.dark-mode input[type="file"],
+        body.dark-mode textarea,
+        body.dark-mode select {
+            background: #000000 !important;
+            border: 1px solid #1a1814 !important;
+            color: #ffffff !important;
+        }
+        
+        body.dark-mode input::placeholder,
+        body.dark-mode textarea::placeholder {
+            color: #a1a1aa !important;
+        }
+        
+        body.dark-mode input:focus,
+        body.dark-mode textarea:focus,
+        body.dark-mode select:focus {
+            border-color: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        body.dark-mode select option {
+            background: #000000;
+            color: #ffffff;
+        }
+        
+        body.dark-mode input[type="file"]::file-selector-button {
+            background: #e7e7e4;
+            color: #000000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        body.dark-mode input[type="file"]::file-selector-button:hover {
+            background: #d8d8d5;
+        }
+        
+        body.dark-mode .badge { background: #0b0b0a; color: #ada4a4; border: 1px solid #1a1814; }
+        body.dark-mode .user-avatar { background: #1a1814; color: #ada4a4; }
+        body.dark-mode .stat-card { background: #000000; border: 1px solid #1a1814; }
+        body.dark-mode .overlay { background: rgba(255, 255, 255, 0.5); }
+        body.dark-mode .overlay.active { opacity: 1; }
+        
+        /* Table inversions */
+        body.dark-mode table { background: #000000; }
+        body.dark-mode table thead tr { border-bottom: 1px solid #1a1814 !important; }
+        body.dark-mode table tbody tr { border-bottom: 1px solid #0b0b0a !important; }
+        body.dark-mode table tbody tr:hover { background: #0b0b0a !important; }
+        body.dark-mode table th { color: #e7e7e4; }
+        body.dark-mode table td { color: #e7e7e4; }
+        
+        /* Leaderboard dark mode fix */
+        body.dark-mode .hover\:bg-gray-50:hover { background: #0b0b0a !important; }
+        body.dark-mode .bg-gray-200 { background: #2b2b27 !important; }
+        
+        /* Text color inversions */
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 { color: #ffffff; }
+        body.dark-mode p { color: #e7e7e4; }
+        body.dark-mode span { color: #e7e7e4; }
+        body.dark-mode div { color: #e7e7e4; }
+        body.dark-mode label { color: #e7e7e4; }
+        body.dark-mode a { color: #e7e7e4; }
+        
+        /* Tailwind color class inversions */
+        body.dark-mode .text-gray-900 { color: #e7e7e4 !important; }
+        body.dark-mode .text-gray-800 { color: #e7e7e4 !important; }
+        body.dark-mode .text-gray-700 { color: #d8d8d5 !important; }
+        body.dark-mode .text-gray-600 { color: #ada4a4 !important; }
+        body.dark-mode .text-gray-500 { color: #8e8e8e !important; }
+        body.dark-mode .text-gray-400 { color: #5e5e5e !important; }
+        body.dark-mode .text-black { color: #ffffff !important; }
+        body.dark-mode .text-white { color: #000000 !important; }
+        
+        /* Quote icon specific fix */
+        body.dark-mode .fa-quote-left.text-white { color: #000000 !important; }
+        
+        /* Background color inversions */
+        body.dark-mode .bg-white { background: #000000 !important; }
+        body.dark-mode .bg-black { background: #ffffff !important; }
+        body.dark-mode .bg-black .text-white,
+        body.dark-mode .bg-black i.text-white { color: #000000 !important; }
+        body.dark-mode .bg-gray-50 { background: #0b0b0a !important; }
+        body.dark-mode .bg-gray-100 { background: #1a1814 !important; }
+        body.dark-mode .bg-gray-200 { background: #2b2b27 !important; }
+        body.dark-mode .bg-gray-900 { background: #e7e7e4 !important; }
+        
+        /* Border color inversions */
+        body.dark-mode .border-gray-100 { border-color: #1a1814 !important; }
+        body.dark-mode .border-gray-200 { border-color: #2b2b27 !important; }
+        body.dark-mode .border-gray-300 { border-color: #3b3b37 !important; }
+        body.dark-mode .border-gray-700 { border-color: #d8d8d5 !important; }
+        
+        /* Badge color inversions */
+        body.dark-mode .bg-blue-100 { background: #001015 !important; }
+        body.dark-mode .bg-blue-100 i { color: #dbeafe !important; }
+        body.dark-mode .text-blue-800 { color: #87ceeb !important; }
+        body.dark-mode .text-blue-600 { color: #6ba3d0 !important; }
+        body.dark-mode .hover\:text-blue-800:hover { color: #a3cce6 !important; }
+        body.dark-mode .border-blue-200 { border-color: #3a628b !important; }
+        
+        body.dark-mode .bg-green-50 { background: #001a0d !important; }
+        body.dark-mode .bg-green-100 { background: #002614 !important; }
+        body.dark-mode .text-green-800 { color: #66ff99 !important; }
+        body.dark-mode .border-green-200 { border-color: #003319 !important; }
+        
+        body.dark-mode .bg-red-50 { background: #1a0000 !important; }
+        body.dark-mode .bg-red-100 { background: #260000 !important; }
+        body.dark-mode .text-red-800 { color: #ff6666 !important; }
+        body.dark-mode .border-red-200 { border-color: #330000 !important; }
+        
+        body.dark-mode .bg-yellow-50 { background: #1a1a00 !important; }
+        body.dark-mode .bg-yellow-100 { background: #262600 !important; }
+        body.dark-mode .text-yellow-800 { color: #ffff66 !important; }
+        body.dark-mode .border-yellow-200 { border-color: #333300 !important; }
+        
+        body.dark-mode .bg-purple-50 { background: #100010 !important; }
+        body.dark-mode .bg-purple-100 { background: #100010 !important; }
+        body.dark-mode .text-purple-800 { color: #da70d6 !important; }
+        body.dark-mode .border-purple-200 { border-color: #330033 !important; }
+        
+        /* Select and form elements */
+        body.dark-mode select { background: #000000; color: #e7e7e4; border: 1px solid #2b2b27; }
+        body.dark-mode select option { background: #000000; color: #e7e7e4; }
+        body.dark-mode textarea { background: #000000; color: #e7e7e4; border: 1px solid #2b2b27; }
+        
+        /* Icons in dark mode */
+        body.dark-mode .fa, body.dark-mode .fas, body.dark-mode .far, body.dark-mode .fab { color: inherit; }
+        
+        /* Red notification dot stays red */
+        body.dark-mode .bg-red-500 { background: #ef4444 !important; }
+        
+        /* Streak icon in dark mode - keep vibrant */
+        body.dark-mode .bg-orange-500 { background: #ff8c00 !important; }
+        body.dark-mode .text-white { color: #ffffff !important; }
+        
+        /* Dashboard specific badge enhancements */
+        body.dark-mode .bg-purple-100 { background: #8b5cf6 !important; }
+        body.dark-mode .bg-purple-100 i { color: #ffffff !important; }
+        body.dark-mode .text-purple-600 { color: #ffffff !important; }
+        
+        /* Ensure orange badges are vibrant on dashboard */
+        body.dark-mode .bg-orange-500 i { color: #ffffff !important; }
+        
+        /* Icon boxes in dark mode */
+        body.dark-mode .bg-orange-100 { background: #f97316 !important; }
+        body.dark-mode .text-orange-600 { color: #ffffff !important; }
+        body.dark-mode .bg-blue-100 { background: #3b82f6 !important; }
+        body.dark-mode .text-blue-600 { color: #ffffff !important; }
+        body.dark-mode .bg-purple-100 { background: #a855f7 !important; }
+        body.dark-mode .text-purple-600 { color: #ffffff !important; }
+        
+        /* Links */
+        body.dark-mode a.text-blue-600 { color: #66b3ff !important; }
+        body.dark-mode a.text-blue-600:hover { color: #99ccff !important; }
+        body.dark-mode a.text-red-600 { color: #ff6666 !important; }
+        body.dark-mode a.text-red-600:hover { color: #ff9999 !important; }
+        
+        /* Leaderboard hover - keep text visible */
+        body.dark-mode .hover\:text-blue-600:hover { color: #66b3ff !important; }
+        
+        /* Gradients inversion */
+        body.dark-mode .bg-gradient-to-br { background: none !important; }
+        body.dark-mode .from-indigo-500 { background: #000000 !important; }
+        body.dark-mode .to-purple-500 { background: #000000 !important; }
+        
+        /* Scrollbar in dark mode */
+        body.dark-mode ::-webkit-scrollbar-track { background: #050505; }
+        body.dark-mode ::-webkit-scrollbar-thumb { background: #2b2b27; }
+        
+        /* Code blocks */
+        body.dark-mode pre[class*="language-"] { background: #0b0b0a !important; border: 1px solid #1a1814; color: #e7e7e4; }
+        body.dark-mode code { background: #0b0b0a; color: #e7e7e4; }
+        
+        /* Theme toggle button styling */
+        .theme-toggle { padding: 0.5rem; border-radius: 0.5rem; background: transparent; border: none; cursor: pointer; transition: all 0.2s; color: #52525b; }
+        .theme-toggle:hover { background: #f4f4f5; }
+        body.dark-mode .theme-toggle { color: #ada4a4; }
+        body.dark-mode .theme-toggle:hover { background: #0b0b0a; }
+        .theme-icon { font-size: 1.25rem; }
+    </style>
+    
+</head>
+<body>
+    
+    <!-- Sidebar for authenticated users -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <a href="/dashboard/" class="flex items-center space-x-2 text-lg font-semibold text-gray-900">
+                <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                    <i class="fas fa-brain text-white text-sm"></i>
+                </div>
+                <span>My Tracker</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard/" class="nav-item active">
+                <i class="fas fa-th-large"></i><span>Dashboard</span>
+            </a>
+            <a href="/create/" class="nav-item ">
+                <i class="fas fa-plus"></i><span>Add New Entry</span>
+            </a>
+            <a href="/my-magics/" class="nav-item ">
+                <i class="fas fa-magic"></i><span>My Magics</span>
+            </a>
+            <a href="/my-efforts/" class="nav-item ">
+                <i class="fas fa-bullseye"></i><span>My Efforts</span>
+            </a>
+            <a href="/my-jobs/" class="nav-item ">
+                <i class="fas fa-briefcase"></i><span>My Jobs</span>
+            </a>
+            <a href="/search/" class="nav-item ">
+                <i class="fas fa-search"></i><span>Search</span>
+            </a>
+            <div style="margin: 1rem 0; border-top: 1px solid #e5e7eb;"></div>
+            
+        </nav>
+    </aside>
+    
+    <!-- Top Nav for authenticated users -->
+    <header class="top-nav">
+        <div class="flex items-center">
+            <button class="md:hidden mr-4 p-2 text-gray-600 hover:text-gray-900" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="text-sm text-gray-600">
+                <span class="text-gray-900 font-medium">Dashboard</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                <i class="fas fa-moon theme-icon" id="themeIcon"></i>
+            </button>
+            <button class="p-2 text-gray-600 hover:text-gray-900 relative">
+                <i class="far fa-bell"></i>
+                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
+                <div class="user-avatar">K</div>
+                <div class="hidden sm:block">
+                    <div class="text-sm font-medium text-gray-900">kanishkan</div>
+                    <div class="text-xs text-gray-500">kanishkan@example.com</div>
+                </div>
+                <a href="/logout/" class="text-gray-600 hover:text-gray-900 ml-2" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    
+    
+    
+    <!-- Content area for all users -->
+    
+    <main class="main-content">
+    
+        
+        
+<div class="space-y-6 fade-in">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900">Welcome back, kanishkan!</h1>
+            <p class="text-sm text-gray-600 mt-1">Here's your learning progress overview</p>
+        </div>
+        <a href="/create/" class="btn-primary">
+            <i class="fas fa-plus"></i>
+            <span>New Entry</span>
+        </a>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Streak Card -->
+        <div class="stat-card">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-10 h-10 bg-orange-400 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-fire text-white"></i>
+                </div>
+                <span class="text-xs text-gray-500 font-medium">STREAK</span>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-gray-900 mb-1">1</p>
+                <p class="text-sm text-gray-600">Days in a row</p>
+            </div>
+        </div>
+        
+        <!-- Total Logs Card -->
+        <div class="stat-card">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-book text-blue-600"></i>
+                </div>
+                <span class="text-xs text-gray-500 font-medium">TOTAL</span>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-gray-900 mb-1">4</p>
+                <p class="text-sm text-gray-600">Learning entries</p>
+            </div>
+        </div>
+        
+        <!-- Last Log Date -->
+        <div class="stat-card">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-purple-600"></i>
+                </div>
+                <span class="text-xs text-gray-500 font-medium">LATEST</span>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-gray-900 mb-1">Sep 27</p>
+                <p class="text-sm text-gray-600">Last entry date</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Motivation Quote -->
+    <div class="card p-6 bg-gradient-to-r from-gray-50 to-white border-l-4 border-gray-900" id="quote-container">
+        <div class="flex items-start space-x-4">
+            <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-quote-left text-white text-sm"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-lg text-gray-900 font-normal mb-2 italic transition-opacity duration-300" id="quote-text">
+                    "The only way to do great work is to love what you do."
+                </p>
+                <p class="text-sm text-gray-600 font-medium transition-opacity duration-300" id="quote-author">
+                    — Steve Jobs
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Logs & Leaderboard -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent Logs (2 columns) -->
+        <div class="lg:col-span-2 card p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-semibold text-gray-900">Recent Entries</h2>
+                <a href="/search/" class="text-sm text-gray-600 hover:text-gray-900">View all</a>
+            </div>
+            <div class="space-y-3">
+                
+                <a href="/log/914841/" class="block card p-4 hover:shadow-md transition-all duration-200 group">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="text-xs text-gray-500 font-mono">#914841</span>
+                                <span class="text-xs text-gray-400">•</span>
+                                <span class="text-xs text-gray-600">
+                                    <i class="far fa-calendar text-xs"></i>
+                                    Sept. 27, 2026
+                                </span>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-900 mb-1 group-hover:text-black">GROK-INTERVIEW-PREPARATION-FILE</h3>
+                            <p class="text-xs text-gray-600 line-clamp-2">GROK-INTERVIEW-PREPARATION-FILE</p>
+                            
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 group-hover:text-gray-900 transition-colors ml-4 text-xs"></i>
+                    </div>
+                </a>
+                
+                <a href="/log/061536/" class="block card p-4 hover:shadow-md transition-all duration-200 group">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="text-xs text-gray-500 font-mono">#061536</span>
+                                <span class="text-xs text-gray-400">•</span>
+                                <span class="text-xs text-gray-600">
+                                    <i class="far fa-calendar text-xs"></i>
+                                    Sept. 27, 2026
+                                </span>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-900 mb-1 group-hover:text-black">CLAUDE-INTERVIEW-PREPARATION-FILE</h3>
+                            <p class="text-xs text-gray-600 line-clamp-2">CHATGPT-INTERVIEW-PREPARATION-FILE</p>
+                            
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 group-hover:text-gray-900 transition-colors ml-4 text-xs"></i>
+                    </div>
+                </a>
+                
+                <a href="/log/447937/" class="block card p-4 hover:shadow-md transition-all duration-200 group">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="text-xs text-gray-500 font-mono">#447937</span>
+                                <span class="text-xs text-gray-400">•</span>
+                                <span class="text-xs text-gray-600">
+                                    <i class="far fa-calendar text-xs"></i>
+                                    Sept. 27, 2026
+                                </span>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-900 mb-1 group-hover:text-black">GEMINI-INTERVIEW-PREPARATION-FILE</h3>
+                            <p class="text-xs text-gray-600 line-clamp-2">Google Gemini&#x27;s interview preparation file</p>
+                            
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 group-hover:text-gray-900 transition-colors ml-4 text-xs"></i>
+                    </div>
+                </a>
+                
+                <a href="/log/082042/" class="block card p-4 hover:shadow-md transition-all duration-200 group">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="text-xs text-gray-500 font-mono">#082042</span>
+                                <span class="text-xs text-gray-400">•</span>
+                                <span class="text-xs text-gray-600">
+                                    <i class="far fa-calendar text-xs"></i>
+                                    Sept. 27, 2026
+                                </span>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-900 mb-1 group-hover:text-black">CHATGPT-INTERVIEW-PREPARATION-FILE</h3>
+                            <p class="text-xs text-gray-600 line-clamp-2">GPT Interview questions</p>
+                            
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 group-hover:text-gray-900 transition-colors ml-4 text-xs"></i>
+                    </div>
+                </a>
+                
+            </div>
+        </div>
+        
+        <!-- Leaderboard (1 column) -->
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-semibold text-gray-900">Leaderboard</h2>
+                <i class="fas fa-trophy text-yellow-500"></i>
+            </div>
+            <div class="space-y-3">
+                
+                <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-sm">
+                        1
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <a href="/user/kanishkan/entries/" class="block">
+                            <p class="text-sm font-medium text-gray-900 truncate hover:text-blue-600">
+                                kanishkan
+                            </p>
+                        </a>
+                        <p class="text-xs text-gray-600">4 entries</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500 text-white">
+                            <i class="fas fa-fire text-xs mr-1"></i>
+                            1
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-sm">
+                        2
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <a href="/user/adminuser/entries/" class="block">
+                            <p class="text-sm font-medium text-gray-900 truncate hover:text-blue-600">
+                                adminuser
+                            </p>
+                        </a>
+                        <p class="text-xs text-gray-600">0 entries</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500 text-white">
+                            <i class="fas fa-fire text-xs mr-1"></i>
+                            0
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-sm">
+                        3
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <a href="/user/velmurugan/entries/" class="block">
+                            <p class="text-sm font-medium text-gray-900 truncate hover:text-blue-600">
+                                velmurugan
+                            </p>
+                        </a>
+                        <p class="text-xs text-gray-600">0 entries</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500 text-white">
+                            <i class="fas fa-fire text-xs mr-1"></i>
+                            0
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-sm">
+                        4
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <a href="/user/preetha/entries/" class="block">
+                            <p class="text-sm font-medium text-gray-900 truncate hover:text-blue-600">
+                                preetha
+                            </p>
+                        </a>
+                        <p class="text-xs text-gray-600">0 entries</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500 text-white">
+                            <i class="fas fa-fire text-xs mr-1"></i>
+                            0
+                        </span>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-rotate quotes every 4 seconds (sequential order)
+    function fetchRandomQuote() {
+        fetch("/api/quote/")
+            .then(response => response.json())
+            .then(data => {
+                const quoteText = document.getElementById('quote-text');
+                const quoteAuthor = document.getElementById('quote-author');
+                
+                // Fade out
+                quoteText.style.opacity = '0';
+                quoteAuthor.style.opacity = '0';
+                
+                // Update content after fade out
+                setTimeout(() => {
+                    quoteText.textContent = '"' + data.text + '"';
+                    quoteAuthor.textContent = '— ' + (data.author || 'Anonymous');
+                    
+                    // Fade in
+                    quoteText.style.opacity = '1';
+                    quoteAuthor.style.opacity = '1';
+                }, 300);
+            })
+            .catch(error => console.log('Quote fetch error:', error));
+    }
+    
+    // Start auto-rotation after 4 seconds, then repeat every 4 seconds
+    setInterval(fetchRandomQuote, 4000);
+</script>
+
+    
+    </main>
+    
+    
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+            }
+        }
+        
+        // Dark Mode Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            body.classList.toggle('dark-mode');
+            
+            // Update icon
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        
+        // Load saved theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                if (themeIcon) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                }
+            }
+        });
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - My Tracker{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto fade-in">
+    <div class="card p-8">
+        <div class="flex items-center space-x-3 mb-8 pb-4 border-b-2 border-black">
+            <div class="w-12 h-12 bg-[#f4efe6] border-2 border-black rounded-xl flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                <i class="fas fa-briefcase text-black text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-black">{{ title }}</h1>
+                <p class="text-sm text-gray-700 font-medium">Fill in and update organization, role, link, and status</p>
+            </div>
+        </div>
+
+        {% if selected_folder %}
+            <div class="mb-6 p-4 rounded-xl bg-[#f4efe6] border-2 border-black text-sm text-black shadow-[1px_1px_0px_#000000] flex items-center gap-2 font-medium">
+                <i class="fas fa-folder-open text-black"></i>
+                <span>Adding to folder: <strong class="text-black">{{ selected_folder.name }}</strong></span>
+            </div>
+        {% endif %}
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                        <i class="fas fa-building text-black mr-1"></i>
+                        Organization (Company Name) *
+                    </label>
+                    {{ form.company_name }}
+                    {% if form.company_name.errors %}
+                        <p class="text-xs text-red-600 mt-1 font-semibold">{{ form.company_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                        <i class="fas fa-user-tag text-black mr-1"></i>
+                        Role (Job Title) *
+                    </label>
+                    {{ form.job_title }}
+                    {% if form.job_title.errors %}
+                        <p class="text-xs text-red-600 mt-1 font-semibold">{{ form.job_title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                        <i class="fas fa-info-circle text-black mr-1"></i>
+                        Status *
+                    </label>
+                    {{ form.status }}
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                        <i class="fas fa-folder text-black mr-1"></i>
+                        App / Platform Folder
+                    </label>
+                    {{ form.folder }}
+                    <p class="text-xs text-gray-600 mt-1 font-medium">Organize this job under an App (e.g. LinkedIn, Indeed)</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                        <i class="fas fa-link text-black mr-1"></i>
+                        Job Link (URL)
+                    </label>
+                    {{ form.job_url }}
+                    <p class="text-xs text-gray-600 mt-1 font-medium">Link to the LinkedIn post or company career page</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                        <i class="fas fa-calendar text-black mr-1"></i>
+                        Application Date *
+                    </label>
+                    {{ form.application_date }}
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                    <i class="fas fa-file-alt text-black mr-1"></i>
+                    Notes & Details (Optional)
+                </label>
+                {{ form.notes }}
+                <p class="text-xs text-gray-600 mt-1 font-medium">Salary expectations, recruiter contacts, or interview round notes</p>
+            </div>
+
+            <div class="flex items-center space-x-3 pt-4 border-t-2 border-black">
+                <button type="submit" class="btn-primary cursor-pointer">
+                    <i class="fas fa-save"></i>
+                    <span>Save Job Application</span>
+                </button>
+                <a href="/my-jobs/" class="btn-secondary cursor-pointer">
+                    <span>Cancel</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Tracker{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Sandal White Linen Background with Hardware-Accelerated Native 120 FPS Scrolling */
+        html {
+            background-color: #f7f4ee !important;
+            overscroll-behavior-y: none;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f7f4ee !important;
+            background-image: none !important;
+            color: #18181b !important;
+            min-height: 100vh;
+            overflow-x: hidden;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* 120 FPS Locked Scroll Optimization: Temporarily disable hover repaints while scrolling */
+        body.is-scrolling,
+        body.is-scrolling * {
+            pointer-events: none !important;
+        }
+
+        body.is-scrolling .sidebar,
+        body.is-scrolling .top-nav {
+            pointer-events: auto !important;
+        }
+
+        /* Slow, Graceful, and Buttery Smooth Page Switching Transitions Across Entire Website */
+        @keyframes pageFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pageFadeOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+        }
+
+        .main-content {
+            margin-left: 260px;
+            margin-top: 64px;
+            padding: 2rem;
+            background-color: #f7f4ee !important;
+            min-height: calc(100vh - 64px);
+            animation: pageFadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            transform: translateZ(0);
+            will-change: opacity, transform;
+            transition: margin-left 0.35s cubic-bezier(0.22, 1, 0.36, 1), padding 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+        }
+
+        .main-content.page-exiting {
+            animation: pageFadeOut 0.26s cubic-bezier(0.32, 0, 0.67, 0) forwards !important;
+            pointer-events: none;
+        }
+
+        /* Sandal White Sidebar with Crisp Black Border and GPU Compositing Layer */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: #f4efe6 !important;
+            border-right: 1.5px solid #000000 !important;
+            z-index: 40;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            will-change: transform;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+        }
+
+        .sidebar-logo {
+            padding: 1.25rem 1.25rem;
+            border-bottom: 1.5px solid #000000 !important;
+        }
+
+        .sidebar-logo a,
+        .sidebar-logo span {
+            color: #000000 !important;
+            font-weight: 700;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0.75rem;
+        }
+
+        /* Sandal White Top Nav with Crisp Black Border and GPU Compositing Layer */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 260px;
+            right: 0;
+            height: 64px;
+            background: #f4efe6 !important;
+            border-bottom: 1.5px solid #000000 !important;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            will-change: left;
+            transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+        }
+
+        .top-nav span,
+        .top-nav button,
+        .top-nav i {
+            color: #000000 !important;
+        }
+
+        /* ==========================================================================
+           SANDAL WHITE WITH BLACK BORDER THEME (HIGH-CONTRAST NEO-MINIMALIST)
+           ========================================================================== */
+
+        /* 1. Container Cards with CSS Containment for 120 FPS Scrolling */
+        .card {
+            background: #ffffff !important;
+            border: 2px solid #000000 !important;
+            border-radius: 0.85rem;
+            box-shadow: 3px 3px 0px #000000 !important;
+            transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+            contain: layout style;
+        }
+
+        .card:hover {
+            box-shadow: 4px 4px 0px #000000 !important;
+        }
+
+        /* 2. Stat Cards, App Folder Cards, Folder Tabs */
+        .stat-card {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 2px solid #000000 !important;
+            box-shadow: 3px 3px 0px #000000 !important;
+            border-radius: 0.85rem !important;
+            padding: 1.25rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            min-height: 135px !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.28s ease !important;
+            contain: layout style;
+        }
+
+        .stat-card:hover {
+            background: #faf8f3 !important;
+            box-shadow: 4px 4px 0px #000000 !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .interactive-card,
+        .folder-item-tab {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 2px solid #000000 !important;
+            box-shadow: 2px 2px 0px #000000 !important;
+            border-radius: 0.75rem;
+            transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.28s ease !important;
+            contain: layout style;
+        }
+
+        .interactive-card:hover,
+        .folder-item-tab:hover {
+            background: #faf8f3 !important;
+            box-shadow: 3px 3px 0px #000000 !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .folder-item-tab.active-tab {
+            background: #ede8dc !important;
+            border: 2px solid #000000 !important;
+            box-shadow: 2px 2px 0px #000000 !important;
+            font-weight: 700 !important;
+        }
+
+        /* 3. Navigation Items */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.45rem;
+            border-radius: 0.65rem;
+            color: #18181b !important;
+            background: transparent !important;
+            border: 1.5px solid transparent !important;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        }
+
+        .nav-item i {
+            width: 22px;
+            margin-right: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .nav-item:hover {
+            color: #000000 !important;
+            background: #ede8dc !important;
+            border-color: #000000 !important;
+        }
+
+        .nav-item.active {
+            color: #ffffff !important;
+            background: #000000 !important;
+            border: 1.5px solid #000000 !important;
+            font-weight: 700 !important;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .nav-item.active i,
+        .nav-item.active span {
+            color: #ffffff !important;
+        }
+
+        /* 4. Buttons with Slow, Graceful Transitions */
+        .btn-primary {
+            background: #000000 !important;
+            color: #ffffff !important;
+            border: 1.5px solid #000000 !important;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.4) !important;
+            padding: 0.65rem 1.25rem;
+            border-radius: 0.65rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        }
+
+        .btn-primary:hover {
+            background: #27272a !important;
+            color: #ffffff !important;
+            box-shadow: 3px 3px 0px #000000 !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px) !important;
+            box-shadow: 1px 1px 0px #000000 !important;
+        }
+
+        .btn-primary i,
+        .btn-primary span,
+        .btn-primary * {
+            color: #ffffff !important;
+        }
+
+        .btn-secondary {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 1.5px solid #000000 !important;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.25) !important;
+            padding: 0.65rem 1.25rem;
+            border-radius: 0.65rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        }
+
+        .btn-secondary:hover {
+            background: #f2ede4 !important;
+            color: #000000 !important;
+            box-shadow: 3px 3px 0px #000000 !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .btn-secondary:active {
+            transform: translateY(1px) !important;
+            box-shadow: 1px 1px 0px #000000 !important;
+        }
+
+        .btn-secondary i,
+        .btn-secondary span {
+            color: #000000 !important;
+        }
+
+        button:not(.btn-unstyled) {
+            border-radius: 0.65rem;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        }
+
+        /* 5. Inputs, Textarea, Select */
+        .input,
+        .form-input,
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="url"],
+        input[type="search"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.65rem 0.95rem;
+            background: #ffffff !important;
+            border: 1.5px solid #000000 !important;
+            border-radius: 0.65rem;
+            color: #000000 !important;
+            font-size: 0.875rem;
+            box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.15) !important;
+            transition: all 0.15s ease !important;
+        }
+
+        .input::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            color: #71717a !important;
+        }
+
+        .input:focus,
+        .form-input:focus,
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none !important;
+            border-color: #000000 !important;
+            box-shadow: 3px 3px 0px #000000 !important;
+        }
+
+        textarea.input {
+            min-height: 120px;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+        }
+
+        /* 6. Icon Square Rectangles */
+        .icon-rectangle {
+            background: #fdfcf9 !important;
+            border: 1.5px solid #000000 !important;
+            box-shadow: 1px 1px 0px #000000 !important;
+            transition: transform 0.15s ease;
+        }
+        .icon-rectangle:hover {
+            background: #f4efe6 !important;
+            border-color: #000000 !important;
+        }
+
+        /*7. Monochrome Window Dots*/
+        .mac-traffic-dots {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mac-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1.5px solid #000000;
+        }
+
+        .mac-dot-red { background: #ff5f56 !important; }
+        .mac-dot-yellow { background: #ffbd2e !important; }
+        .mac-dot-green { background: #27c93f !important; }
+
+        /* 8. Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #f4efe6 !important;
+            color: #000000 !important;
+            border: 1.5px solid #000000 !important;
+            box-shadow: 1px 1px 0px #000000 !important;
+            transition: all 0.15s ease !important;
+        }
+
+        .badge:hover {
+            background: #ede8dc !important;
+            border-color: #000000 !important;
+        }
+
+        .badge.bg-blue-100,
+        .badge.text-blue-800,
+        .badge.bg-green-100,
+        .badge.text-green-800,
+        .badge.bg-yellow-100,
+        .badge.text-yellow-800,
+        .badge.bg-red-100,
+        .badge.text-red-800 {
+            background: #f4efe6 !important;
+            color: #000000 !important;
+            border: 1.5px solid #000000 !important;
+        }
+
+        /* 9. User Avatar */
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #000000 !important;
+            border: 1.5px solid #000000 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #ffffff !important;
+            box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 10. Tables */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        thead tr {
+            border-bottom: 2px solid #000000 !important;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
+            content-visibility: auto;
+            contain-intrinsic-size: 0 48px;
+            transition: all 0.15s ease !important;
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 0, 0, 0.02) !important;
+            border-bottom-color: #000000 !important;
+        }
+
+        th {
+            color: #000000 !important;
+            font-weight: 700 !important;
+        }
+
+        td {
+            color: #18181b !important;
+        }
+
+        /* Typography & Color Harmonization */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: #000000 !important;
+            letter-spacing: -0.015em;
+            font-weight: 700;
+        }
+
+        .text-white {
+            color: #000000 !important;
+        }
+
+        .text-gray-900,
+        .text-gray-800,
+        .text-gray-700 {
+            color: #18181b !important;
+        }
+
+        .text-gray-600,
+        .text-gray-500,
+        .text-gray-400 {
+            color: #52525b !important;
+        }
+
+        .bg-white {
+            background: #ffffff !important;
+        }
+
+        .bg-black {
+            background: #f2ede4 !important;
+            border: 1.5px solid #000000 !important;
+        }
+
+        .bg-gray-50,
+        .bg-gray-100,
+        .bg-gray-200 {
+            background: #f7f4ee !important;
+        }
+
+        .border-gray-100,
+        .border-gray-200,
+        .border-gray-300 {
+            border-color: rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Responsive Sidebar */
+        body.hide-sidebar .sidebar {
+            transform: translateX(-100%);
+        }
+
+        body.hide-sidebar .top-nav {
+            left: 0;
+        }
+
+        body.hide-sidebar .main-content {
+            margin-left: 0;
+            padding: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .top-nav {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 35;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Sleek Black Scrollbar on Sandal Canvas */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f7f4ee;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #000000;
+            border-radius: 9999px;
+            border: 1px solid #f7f4ee;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+
+        /* Prism Code Block */
+        pre[class*="language-"] {
+            background: #ffffff !important;
+            border: 1.5px solid #000000 !important;
+            border-radius: 0.75rem;
+            color: #000000 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar with macOS styling -->
+    <aside class="sidebar" id="sidebar">
+        <div class="px-5 pt-4 pb-1">
+            <div class="mac-traffic-dots">
+                <span class="mac-dot mac-dot-red"></span>
+                <span class="mac-dot mac-dot-yellow"></span>
+                <span class="mac-dot mac-dot-green"></span>
+            </div>
+        </div>
+
+        <div class="sidebar-logo">
+            <a href="/dashboard/" class="flex items-center space-x-2.5 text-base font-bold text-black">
+                <div class="w-8 h-8 rounded-lg bg-[#f4efe6] border-2 border-black flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                    <i class="fas fa-briefcase text-sm text-blue-600"></i>
+                </div>
+                <span class="tracking-tight text-black">My Tracker</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard/" class="nav-item {% if request.path == '/dashboard/' %}active{% endif %}">
+                <i class="fas fa-th-large text-indigo-600"></i><span>Dashboard</span>
+            </a>
+            <a href="/my-jobs/" class="nav-item {% if '/my-jobs/' in request.path or 'job' in request.path %}active{% endif %}">
+                <i class="fas fa-briefcase text-blue-600"></i><span>My Jobs</span>
+            </a>
+            <a href="/create/" class="nav-item {% if request.path == '/create/' %}active{% endif %}">
+                <i class="fas fa-plus text-emerald-600"></i><span>Add New Entry</span>
+            </a>
+            <a href="/search/" class="nav-item {% if request.path == '/search/' %}active{% endif %}">
+                <i class="fas fa-search text-purple-600"></i><span>Search</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Top Nav -->
+    <header class="top-nav">
+        <div class="flex items-center">
+            <button
+                class="mr-3 p-2 text-gray-400 hover:text-white rounded-lg border border-transparent hover:border-white transition-colors"
+                onclick="toggleSidebarBanner()" title="Toggle Sidebar Navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="text-sm">
+                <span class="font-medium text-white tracking-wide">{% block page_title %}My Tracker{% endblock %}</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3 pl-4 border-l border-[rgba(255,255,255,0.2)]">
+                <div class="user-avatar">{{ user.username|first|upper }}</div>
+                <div class="hidden sm:block">
+                    <div class="text-sm font-medium text-white">{{ user.username }}</div>
+                    <div class="text-xs text-gray-400">{{ user.email|default:"user@example.com" }}</div>
+                </div>
+                <a href="/logout/"
+                    class="text-gray-400 hover:text-red-400 ml-2 p-1.5 rounded-lg border border-transparent hover:border-white transition-colors"
+                    title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content Area with Seamless Page Transition Animation -->
+    <main class="main-content" id="main-content">
+        {% if messages %}
+        <div class="max-w-6xl mx-auto mb-5 space-y-2.5">
+            {% for message in messages %}
+                {% if 'delete' in message|lower or 'removed' in message|lower %}
+                    <!-- Deletion Alert (Sandal White with Crisp Black Border & Red Accent) -->
+                    <div class="p-3.5 px-4 rounded-xl text-sm bg-[#fff8f8] border-2 border-black shadow-[3px_3px_0px_#000000] flex items-center justify-between gap-3 text-black font-semibold">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-red-100 border-2 border-black flex items-center justify-center text-red-600 flex-shrink-0 shadow-[1px_1px_0px_#000000]">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </div>
+                            <span class="text-black font-bold tracking-tight">{{ message }}</span>
+                        </div>
+                        <button type="button" onclick="this.closest('div.rounded-xl').remove()" class="text-black hover:opacity-60 text-xs p-1 cursor-pointer">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% elif message.tags == 'error' %}
+                    <!-- Error Alert -->
+                    <div class="p-3.5 px-4 rounded-xl text-sm bg-[#fff5f5] border-2 border-black shadow-[3px_3px_0px_#000000] flex items-center justify-between gap-3 text-black font-semibold">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-red-100 border-2 border-black flex items-center justify-center text-red-600 flex-shrink-0 shadow-[1px_1px_0px_#000000]">
+                                <i class="fas fa-exclamation-triangle text-xs"></i>
+                            </div>
+                            <span class="text-black font-bold tracking-tight">{{ message }}</span>
+                        </div>
+                        <button type="button" onclick="this.closest('div.rounded-xl').remove()" class="text-black hover:opacity-60 text-xs p-1 cursor-pointer">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% else %}
+                    <!-- Addition / Success Alert (Sandal White with Crisp Black Border & Green Accent) -->
+                    <div class="p-3.5 px-4 rounded-xl text-sm bg-[#f6fcf8] border-2 border-black shadow-[3px_3px_0px_#000000] flex items-center justify-between gap-3 text-black font-semibold">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 border-2 border-black flex items-center justify-center text-emerald-600 flex-shrink-0 shadow-[1px_1px_0px_#000000]">
+                                <i class="fas fa-check text-xs"></i>
+                            </div>
+                            <span class="text-black font-bold tracking-tight">{{ message }}</span>
+                        </div>
+                        <button type="button" onclick="this.closest('div.rounded-xl').remove()" class="text-black hover:opacity-60 text-xs p-1 cursor-pointer">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // Locked High-FPS Native Scroll Optimizer: suspends hover repaints during scroll events
+        let isScrollingTimer = null;
+        window.addEventListener('scroll', function () {
+            if (!document.body.classList.contains('is-scrolling')) {
+                document.body.classList.add('is-scrolling');
+            }
+            clearTimeout(isScrollingTimer);
+            isScrollingTimer = setTimeout(function () {
+                document.body.classList.remove('is-scrolling');
+            }, 80);
+        }, { passive: true });
+
+        // Seamless, Slow and Graceful Page-to-Page Navigation Animation
+        document.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+            const href = link.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.target === '_blank' || link.getAttribute('onclick')) return;
+            if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+                try {
+                    const targetUrl = new URL(link.href, window.location.origin);
+                    if (targetUrl.pathname !== window.location.pathname || targetUrl.search !== window.location.search) {
+                        e.preventDefault();
+                        const main = document.getElementById('main-content');
+                        if (main) {
+                            main.classList.add('page-exiting');
+                            setTimeout(function () {
+                                window.location.href = href;
+                            }, 240);
+                        } else {
+                            window.location.href = href;
+                        }
+                    }
+                } catch (err) {
+                    // fallback to normal link navigation
+                }
+            }
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+            }
+        }
+
+        function toggleSidebarBanner() {
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            } else {
+                document.body.classList.toggle('hide-sidebar');
+            }
+        }
+
+        // Global Custom Delete Confirmation Modal in our Dark Glass UI
+        function openDeleteConfirm(actionUrl, itemName, itemType) {
+            const modal = document.getElementById('globalDeleteModal');
+            const form = document.getElementById('globalDeleteForm');
+            const titleEl = document.getElementById('globalDeleteTitle');
+            const descEl = document.getElementById('globalDeleteDesc');
+
+            if (form) form.action = actionUrl;
+            if (titleEl) {
+                titleEl.textContent = itemType === 'folder' ? 'Delete App Folder?' : 'Delete Job Application?';
+            }
+            if (descEl) {
+                if (itemType === 'folder') {
+                    descEl.innerHTML = `Are you sure you want to delete <strong class="text-white">"${itemName}"</strong> and all its logged jobs? This action cannot be undone.`;
+                } else {
+                    descEl.innerHTML = `Are you sure you want to delete the job application for <strong class="text-white">"${itemName}"</strong>? This action cannot be undone.`;
+                }
+            }
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeDeleteConfirmModal() {
+            const modal = document.getElementById('globalDeleteModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeDeleteConfirmModal();
+        });
+    </script>
+
+    <!-- Global Confirmation Modal for All Deletions (Sandal White with Black Border) -->
+    <div id="globalDeleteModal"
+        class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/40 hidden transition-opacity duration-150"
+        onclick="closeDeleteConfirmModal()">
+        <div class="card p-6 w-full max-w-md bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_#000000] relative"
+            onclick="event.stopPropagation()">
+            <!-- Window Controls & Header -->
+            <div class="flex items-center justify-between mb-4 pb-3 border-b-2 border-black">
+                <div class="mac-traffic-dots">
+                    <span class="mac-dot"></span>
+                    <span class="mac-dot"></span>
+                    <span class="mac-dot"></span>
+                </div>
+                <button type="button" onclick="closeDeleteConfirmModal()"
+                    class="text-black hover:opacity-70 transition-opacity text-sm p-1 rounded" title="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="flex items-start space-x-4 mb-6">
+                <div
+                    class="w-10 h-10 rounded-lg bg-[#f4efe6] border-2 border-black flex items-center justify-center flex-shrink-0 text-black text-base shadow-[1px_1px_0px_#000000]">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-black mb-1" id="globalDeleteTitle">Confirm Deletion</h3>
+                    <p class="text-xs text-gray-700 leading-relaxed" id="globalDeleteDesc">
+                        Are you sure you want to delete this item? This action is permanent and cannot be undone.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Form and Buttons -->
+            <form id="globalDeleteForm" method="post" action="">
+                {% csrf_token %}
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-black/20">
+                    <button type="button" class="btn-secondary text-xs py-2 px-4 cursor-pointer"
+                        onclick="closeDeleteConfirmModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" id="globalDeleteSubmitBtn"
+                        class="btn-primary text-xs py-2 px-4 cursor-pointer">
+                        <i class="fas fa-trash-alt mr-1"></i>
+                        <span>Yes, Delete</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}New Learning Entry - My Tracker{% endblock %}
+{% block page_title %}Create Entry{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto fade-in">
+    <div class="card p-8">
+        <div class="flex items-center space-x-3 mb-8 pb-4 border-b-2 border-black">
+            <div class="w-12 h-12 bg-[#f4efe6] border-2 border-black rounded-xl flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                <i class="fas fa-plus text-black text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-black">New Learning Entry</h1>
+                <p class="text-sm text-gray-700 font-medium">Document your daily progress</p>
+            </div>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                    <i class="fas fa-heading text-black mr-1"></i>
+                    Title *
+                </label>
+                {{ form.title }}
+                <p class="text-xs text-gray-600 mt-1 font-medium">What did you learn today?</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                    <i class="fas fa-calendar text-black mr-1"></i>
+                    Date *
+                </label>
+                {{ form.date }}
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                    <i class="fas fa-file-alt text-black mr-1"></i>
+                    Notes *
+                </label>
+                {{ form.notes }}
+                <p class="text-xs text-gray-600 mt-1 font-medium">Document your learning in detail</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                    <i class="fas fa-code text-black mr-1"></i>
+                    Code Snippet (Optional)
+                </label>
+                {{ form.code_snippet }}
+                <p class="text-xs text-gray-600 mt-1 font-medium">Paste any code you worked on</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-black uppercase tracking-wider mb-2">
+                    <i class="fas fa-tag text-black mr-1"></i>
+                    Code Language (Optional)
+                </label>
+                {{ form.code_language }}
+            </div>
+
+            <div class="flex items-center space-x-3 pt-4 border-t-2 border-black">
+                <button type="submit" class="btn-primary cursor-pointer">
+                    <i class="fas fa-save"></i>
+                    <span>Save Entry</span>
+                </button>
+                <a href="/dashboard/" class="btn-secondary cursor-pointer">
+                    <span>Cancel</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,769 @@
+{% extends "base.html" %}
+
+{% block title %}My Jobs - My Tracker{% endblock %}
+{% block page_title %}My Jobs{% endblock %}
+
+{% block content %}
+<style>
+    .view-transition {
+        transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+        will-change: opacity, transform;
+    }
+    .folder-content-pane {
+        animation: paneFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: opacity, transform;
+    }
+    @keyframes paneFadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+<div class="w-full">
+
+    <!-- Mode 1: ALL FOLDERS VIEW (Default when no folder is selected) -->
+    <div id="all-folders-view" class="max-w-6xl mx-auto view-transition {% if selected_folder_id %}hidden{% endif %}">
+        <!-- Header -->
+        <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-[#f7f4ee] border-2 border-black rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#000000]">
+                    <i class="fas fa-folder text-[#eab308] text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-black tracking-tight">Job Folders</h1>
+                    <p class="text-sm text-gray-700 font-medium">Select any App folder to open the split-screen view with your job links and applications.</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="badge text-xs font-bold">{{ folders.count }} App Folder{{ folders.count|pluralize }}</span>
+                <span class="badge text-xs font-bold">{{ total_jobs }} Job Application{{ total_jobs|pluralize }}</span>
+            </div>
+        </div>
+
+        <!-- Folder Creation Bar (Sandal White with Crisp Black Border) -->
+        <div class="card p-6 mb-8">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-[#f7f4ee] border-2 border-black rounded-lg flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                        <i class="fas fa-folder-plus text-indigo-600 text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-black">Add New App / Platform (Folder)</h2>
+                        <p class="text-xs text-gray-700">Type an app like <strong>LinkedIn</strong> or <strong>Indeed</strong>, hit Okay, and immediately start filling your job links & details.</p>
+                    </div>
+                </div>
+                <!-- Quick Preset Chips -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs text-gray-700 font-bold">Quick Presets:</span>
+                    <button type="button" class="btn-secondary text-xs py-1 px-2.5 cursor-pointer" onclick="setAndSubmitApp('LinkedIn')">
+                        <i class="fab fa-linkedin text-[#0077b5] mr-1"></i> LinkedIn
+                    </button>
+                    <button type="button" class="btn-secondary text-xs py-1 px-2.5 cursor-pointer" onclick="setAndSubmitApp('Indeed')">
+                        <i class="fas fa-briefcase text-[#003a9b] mr-1"></i> Indeed
+                    </button>
+                    <button type="button" class="btn-secondary text-xs py-1 px-2.5 cursor-pointer" onclick="setAndSubmitApp('Wellfound')">
+                        <i class="fas fa-handshake text-[#ff6154] mr-1"></i> Wellfound
+                    </button>
+                    <button type="button" class="btn-secondary text-xs py-1 px-2.5 cursor-pointer" onclick="setAndSubmitApp('Glassdoor')">
+                        <i class="fas fa-door-open text-[#0caa41] mr-1"></i> Glassdoor
+                    </button>
+                    <button type="button" class="btn-secondary text-xs py-1 px-2.5 cursor-pointer" onclick="setAndSubmitApp('Referral')">
+                        <i class="fas fa-user-friends text-[#9333ea] mr-1"></i> Referral
+                    </button>
+                </div>
+            </div>
+
+            <form method="post" action="{% url 'quick_add_folder' %}" id="quickFolderForm" class="flex flex-wrap sm:flex-nowrap gap-3">
+                {% csrf_token %}
+                <input type="text" 
+                       name="app_name" 
+                       id="app_name_input" 
+                       class="input flex-1" 
+                       placeholder="Type App or Platform (e.g. LinkedIn, Indeed, Glassdoor, Greenhouse)..." 
+                       required>
+                <button type="submit" class="btn-primary whitespace-nowrap cursor-pointer">
+                    <i class="fas fa-check text-white"></i>
+                    <span>Okay &rarr; Create App</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Only Folders Shown Here -->
+        <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-lg font-bold text-black">Your App Folders</h2>
+            <span class="text-xs text-gray-700 font-medium">Click any folder to open split view</span>
+        </div>
+
+        {% if folders or unassigned_jobs %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for folder in folders %}
+                    <div class="interactive-card p-6 cursor-pointer relative group flex flex-col justify-between rounded-xl"
+                         onclick="openFolderSplit('{{ folder.pk }}', '{{ folder.name|escapejs }}')">
+                        <div>
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-[#f7f4ee] border-2 border-black flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                                    {% if "linkedin" in folder.name|lower %}
+                                        <i class="fab fa-linkedin text-2xl text-[#0077b5]"></i>
+                                    {% elif "indeed" in folder.name|lower %}
+                                        <i class="fas fa-briefcase text-2xl text-[#003a9b]"></i>
+                                    {% elif "wellfound" in folder.name|lower or "angel" in folder.name|lower %}
+                                        <i class="fas fa-handshake text-2xl text-[#ff6154]"></i>
+                                    {% elif "glassdoor" in folder.name|lower %}
+                                        <i class="fas fa-door-open text-2xl text-[#0caa41]"></i>
+                                    {% elif "referral" in folder.name|lower %}
+                                        <i class="fas fa-user-friends text-2xl text-[#9333ea]"></i>
+                                    {% else %}
+                                        <i class="fas fa-folder-open text-2xl text-[#eab308]"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center space-x-1.5" onclick="event.stopPropagation()">
+                                    <!-- Edit Folder Name Button -->
+                                    <button type="button" 
+                                            class="text-blue-600 hover:opacity-70 p-1.5 transition-opacity text-sm border-0 bg-transparent cursor-pointer" 
+                                            onclick="openRenameModal('{{ folder.pk }}', '{{ folder.name|escapejs }}')"
+                                            title="Rename folder">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <!-- Delete Folder Button -->
+                                    <button type="button" 
+                                            class="text-red-600 hover:opacity-70 p-1.5 transition-opacity text-sm border-0 bg-transparent cursor-pointer" 
+                                            onclick="event.stopPropagation(); openDeleteConfirm('{% url 'folder_delete' folder.pk %}', '{{ folder.name|escapejs }}', 'folder')"
+                                            title="Delete folder">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-bold text-black mb-1">{{ folder.name }}</h3>
+                            <p class="text-xs text-gray-600 mb-4 font-medium">Created {{ folder.created_at|date:"M d, Y" }}</p>
+                        </div>
+                        <div class="pt-4 border-t border-black/15 flex items-center justify-between">
+                            <span class="badge text-xs font-bold">
+                                <i class="fas fa-link mr-1 text-black"></i>
+                                {{ folder.applications.count }} job{{ folder.applications.count|pluralize }}
+                            </span>
+                            <span class="text-xs font-bold text-black group-hover:underline flex items-center gap-1">
+                                <span>Open Split View</span>
+                                <i class="fas fa-arrow-right text-[10px]"></i>
+                            </span>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- Unassigned Folder (if any) -->
+                {% if unassigned_jobs %}
+                    <div class="interactive-card p-6 cursor-pointer relative group flex flex-col justify-between rounded-xl"
+                         onclick="openFolderSplit('unassigned', 'Uncategorized')">
+                        <div>
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-[#f7f4ee] border-2 border-black flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                                    <i class="fas fa-folder text-2xl text-gray-500"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-bold text-black mb-1">Uncategorized Jobs</h3>
+                            <p class="text-xs text-gray-600 mb-4 font-medium">Applications not assigned to a specific App</p>
+                        </div>
+                        <div class="pt-4 border-t border-black/15 flex items-center justify-between">
+                            <span class="badge text-xs font-bold">
+                                {{ unassigned_jobs.count }} job{{ unassigned_jobs.count|pluralize }}
+                            </span>
+                            <span class="text-xs font-bold text-black group-hover:underline flex items-center gap-1">
+                                <span>Open Split View</span>
+                                <i class="fas fa-arrow-right text-[10px]"></i>
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+        {% else %}
+            <!-- Empty state for folders -->
+            <div class="card p-12 text-center">
+                <div class="w-16 h-16 bg-[#f7f4ee] border-2 border-black rounded-full flex items-center justify-center mx-auto mb-4 shadow-[2px_2px_0px_#000000]">
+                    <i class="fas fa-folder-plus text-2xl text-indigo-600"></i>
+                </div>
+                <h3 class="text-lg font-bold text-black mb-1">No App Folders Yet</h3>
+                <p class="text-sm text-gray-700 mb-6 max-w-md mx-auto font-medium">
+                    Type an app name above (e.g. <strong>LinkedIn</strong> or <strong>Indeed</strong>) and hit Okay to create your first folder.
+                </p>
+                <button type="button" onclick="document.getElementById('app_name_input').focus()" class="btn-primary cursor-pointer">
+                    <i class="fas fa-plus text-white"></i>
+                    <span>Create Your First Folder</span>
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+
+    <!-- Mode 2: 35 : 75 RATIO SPLIT SCREEN VIEW -->
+    <div id="split-screen-view" class="w-full view-transition {% if not selected_folder_id %}hidden{% endif %}">
+        
+        <!-- Top Toolbar for Split View -->
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3 pb-3 border-b-2 border-black">
+            <div class="flex items-center space-x-3">
+                <button type="button" class="btn-secondary text-xs py-1.5 px-3.5 cursor-pointer" onclick="closeFolderSplit()">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>All Folders</span>
+                </button>
+                <div class="h-4 w-px bg-black/25"></div>
+                <div class="flex items-center space-x-2 text-sm text-gray-700 font-semibold">
+                    <span>Folders</span>
+                    <i class="fas fa-chevron-right text-xs text-black"></i>
+                    <span class="font-bold text-black" id="split-active-folder-breadcrumb">
+                        {% if selected_folder and selected_folder != 'unassigned' %}
+                            {{ selected_folder.name }}
+                        {% elif selected_folder == 'unassigned' %}
+                            Uncategorized
+                        {% else %}
+                            Select a Folder
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button type="button" class="btn-secondary text-xs py-1.5 px-3 cursor-pointer" onclick="toggleSidebarBanner()" title="Show/Hide Left Banner">
+                    <i class="fas fa-columns"></i>
+                    <span>Toggle Main Menu</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- The 35 : 75 Split Layout -->
+        <div class="flex flex-col lg:flex-row gap-6 items-start w-full">
+            
+            <!-- 35% LEFT SIDE: USER'S FOLDERS -->
+            <div class="w-full lg:w-[35%] flex-shrink-0">
+                <div class="card p-4 sticky top-20">
+                    
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b-2 border-black">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-folder-open text-[#eab308]"></i>
+                            <h2 class="text-sm font-bold text-black">Your Folders (35%)</h2>
+                        </div>
+                        <span class="badge text-xs font-bold">{{ folders.count }}</span>
+                    </div>
+
+                    <!-- Mini Add Folder Input inside 35% side -->
+                    <form method="post" action="{% url 'quick_add_folder' %}" class="flex gap-2 mb-4">
+                        {% csrf_token %}
+                        <input type="text" 
+                               name="app_name" 
+                               class="input py-1.5 px-2.5 text-xs flex-1" 
+                               placeholder="+ New Folder (e.g. Indeed)..." 
+                               required>
+                        <button type="submit" class="btn-primary text-xs py-1.5 px-3 whitespace-nowrap cursor-pointer">
+                            <span>Add</span>
+                        </button>
+                    </form>
+
+                    <!-- Folders Vertical List -->
+                    <div class="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
+                        {% for folder in folders %}
+                            <div class="folder-item-tab p-3 cursor-pointer flex items-center justify-between
+                                        {% if selected_folder_id == folder.pk|stringformat:'s' %}
+                                            active-tab
+                                        {% endif %}"
+                                 id="folder-tab-{{ folder.pk }}"
+                                 onclick="switchFolderTab('{{ folder.pk }}', '{{ folder.name|escapejs }}')">
+                                <div class="flex items-center space-x-2.5 min-w-0 flex-1">
+                                    <div class="w-8 h-8 rounded-lg bg-[#f7f4ee] border-2 border-black flex items-center justify-center flex-shrink-0 shadow-[1px_1px_0px_#000000]">
+                                        {% if "linkedin" in folder.name|lower %}
+                                            <i class="fab fa-linkedin text-[#0077b5] text-sm"></i>
+                                        {% elif "indeed" in folder.name|lower %}
+                                            <i class="fas fa-briefcase text-[#003a9b] text-sm"></i>
+                                        {% elif "wellfound" in folder.name|lower %}
+                                            <i class="fas fa-handshake text-[#ff6154] text-sm"></i>
+                                        {% else %}
+                                            <i class="fas fa-folder text-[#eab308] text-sm"></i>
+                                        {% endif %}
+                                    </div>
+                                    <span class="text-sm font-bold text-black truncate" id="tab-folder-name-{{ folder.pk }}">{{ folder.name }}</span>
+                                </div>
+                                <div class="flex items-center space-x-1.5 flex-shrink-0">
+                                    <span class="badge text-[11px] py-0.5 px-2 font-bold" id="folder-count-badge-{{ folder.pk }}">
+                                        {{ folder.applications.count }}
+                                    </span>
+                                    <!-- Edit Folder Name Icon -->
+                                    <button type="button" 
+                                            class="text-blue-600 hover:opacity-70 p-1 transition-opacity text-xs border-0 bg-transparent cursor-pointer" 
+                                            onclick="event.stopPropagation(); openRenameModal('{{ folder.pk }}', '{{ folder.name|escapejs }}')"
+                                            title="Rename folder">
+                                        <i class="fas fa-pen text-xs"></i>
+                                    </button>
+                                    <!-- Delete Folder Icon -->
+                                    <button type="button" 
+                                            class="text-red-600 hover:opacity-70 p-1 transition-opacity text-xs border-0 bg-transparent cursor-pointer" 
+                                            onclick="event.stopPropagation(); openDeleteConfirm('{% url 'folder_delete' folder.pk %}', '{{ folder.name|escapejs }}', 'folder')"
+                                            title="Delete folder">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        {% if unassigned_jobs %}
+                            <div class="folder-item-tab p-3 cursor-pointer flex items-center justify-between
+                                        {% if selected_folder_id == 'unassigned' %}
+                                            active-tab
+                                        {% endif %}"
+                                 id="folder-tab-unassigned"
+                                 onclick="switchFolderTab('unassigned', 'Uncategorized')">
+                                <div class="flex items-center space-x-2.5 min-w-0">
+                                    <div class="w-8 h-8 rounded-lg bg-[#f7f4ee] border-2 border-black flex items-center justify-center flex-shrink-0 shadow-[1px_1px_0px_#000000]">
+                                        <i class="fas fa-folder text-gray-500 text-sm"></i>
+                                    </div>
+                                    <span class="text-sm font-bold text-black truncate">Uncategorized</span>
+                                </div>
+                                <span class="badge text-[11px] py-0.5 px-2 font-bold">{{ unassigned_jobs.count }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 75% RIGHT SIDE: JOB LINKS & APPLICATION DATA -->
+            <div class="w-full lg:w-[65%] flex-1">
+                
+                <!-- Containers for each folder's jobs (smooth client switching) -->
+                {% for folder in folders %}
+                    <div class="folder-content-pane transition-all duration-200 ease-out {% if selected_folder_id != folder.pk|stringformat:'s' %}hidden{% endif %}"
+                         id="folder-content-{{ folder.pk }}">
+                        
+                        <div class="card p-6 mb-6">
+                            <!-- Folder Header -->
+                            <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b-2 border-black mb-6">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-xl bg-[#f7f4ee] border-2 border-black shadow-[1px_1px_0px_#000000] flex items-center justify-center">
+                                        <i class="fas fa-briefcase text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h2 class="text-xl font-bold text-black tracking-tight" id="pane-folder-title-{{ folder.pk }}">{{ folder.name }} Applications</h2>
+                                            <!-- Rename Button -->
+                                            <button type="button" 
+                                                    class="btn-secondary text-[11px] py-0.5 px-2 ml-1 cursor-pointer"
+                                                    onclick="openRenameModal('{{ folder.pk }}', '{{ folder.name|escapejs }}')"
+                                                    title="Rename folder">
+                                                <i class="fas fa-pen text-[10px] text-blue-600"></i>
+                                                <span>Rename</span>
+                                            </button>
+                                        </div>
+                                        <p class="text-xs text-gray-700 font-medium">All job links and details tracked under <strong class="text-black" id="pane-folder-subname-{{ folder.pk }}">{{ folder.name }}</strong></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" class="btn-primary text-xs cursor-pointer" onclick="toggleAddJobForm('{{ folder.pk }}')">
+                                        <i class="fas fa-plus text-white"></i>
+                                        <span>+ Add Job to {{ folder.name }}</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Inline Add Job Form -->
+                            <div id="add-job-form-box-{{ folder.pk }}" class="hidden mb-6 p-5 rounded-xl bg-[#faf8f3] border-2 border-black shadow-[2px_2px_0px_#000000] transition-all duration-150">
+                                <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-black">
+                                    <h4 class="text-sm font-bold text-black flex items-center gap-2">
+                                        <i class="fas fa-plus-circle text-emerald-600 text-xs"></i>
+                                        <span>Add New Job to {{ folder.name }}</span>
+                                    </h4>
+                                    <button type="button" class="text-xs text-black hover:opacity-60 cursor-pointer" onclick="toggleAddJobForm('{{ folder.pk }}')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <form method="post" action="{% url 'job_create' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="folder" value="{{ folder.pk }}">
+                                    <input type="hidden" name="application_date" value="{% now 'Y-m-d' %}">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                        <div>
+                                            <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Organization *</label>
+                                            <input type="text" name="company_name" class="input py-2 text-xs" placeholder="e.g. Google, Deloitte, Stripe" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Role / Job Title *</label>
+                                            <input type="text" name="job_title" class="input py-2 text-xs" placeholder="e.g. Frontend Engineer, Product Manager" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Job Link (URL)</label>
+                                            <input type="url" name="job_url" class="input py-2 text-xs" placeholder="https://linkedin.com/jobs/view/...">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Status</label>
+                                            <select name="status" class="input py-2 text-xs">
+                                                <option value="Applied" selected>Applied</option>
+                                                <option value="Interview">Interview</option>
+                                                <option value="Offer">Offer</option>
+                                                <option value="Rejected">Rejected</option>
+                                                <option value="Interested">Interested</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Notes / Description</label>
+                                        <input type="text" name="notes" class="input py-2 text-xs" placeholder="Recruiter name, referral note, or interview round notes...">
+                                    </div>
+                                    <div class="flex justify-end space-x-2">
+                                        <button type="button" class="btn-secondary text-xs py-1.5 px-3 cursor-pointer" onclick="toggleAddJobForm('{{ folder.pk }}')">Cancel</button>
+                                        <button type="submit" class="btn-primary text-xs py-1.5 px-4 cursor-pointer">Save Job</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Jobs Table / Links -->
+                            {% if folder.applications.all %}
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left">
+                                        <thead>
+                                            <tr class="border-b-2 border-black">
+                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Organization</th>
+                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Role</th>
+                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Status</th>
+                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Job Link</th>
+                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for job in folder.applications.all %}
+                                                <tr class="border-b border-black/15 hover:bg-[#faf8f3] transition-colors duration-150">
+                                                    <td class="py-3.5 px-3 text-sm font-bold text-black">
+                                                        {{ job.company_name }}
+                                                        {% if job.notes %}
+                                                            <div class="text-[11px] text-gray-600 font-normal truncate max-w-xs">{{ job.notes }}</div>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="py-3.5 px-3 text-sm text-black font-medium">{{ job.job_title }}</td>
+                                                    <td class="py-3.5 px-3">
+                                                        <span class="badge text-xs {{ job.status_badge_class }}">
+                                                            {{ job.status }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-3.5 px-3 text-sm">
+                                                        {% if job.job_url %}
+                                                            <a href="{{ job.job_url }}" target="_blank" rel="noopener" 
+                                                               class="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline font-bold text-xs">
+                                                                <i class="fas fa-external-link-alt mr-1 text-blue-600 text-[10px]"></i>
+                                                                <span>Open Link</span>
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-gray-500 text-xs">No Link</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="py-3.5 px-3 text-right whitespace-nowrap">
+                                                        <a href="/my-jobs/edit/{{ job.pk }}/" class="text-blue-600 hover:text-blue-800 text-xs font-bold mr-3 inline-flex items-center gap-1" title="Edit">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </a>
+                                                        <button type="button" 
+                                                                class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1" 
+                                                                onclick="openDeleteConfirm('/my-jobs/delete/{{ job.pk }}/', '{{ job.company_name|escapejs }} - {{ job.job_title|escapejs }}', 'job')" 
+                                                                title="Delete">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="py-12 text-center text-sm text-gray-700">
+                                    <div class="w-12 h-12 bg-[#f7f4ee] border-2 border-black rounded-full flex items-center justify-center mx-auto mb-3 shadow-[1px_1px_0px_#000000]">
+                                        <i class="fas fa-link text-blue-600"></i>
+                                    </div>
+                                    <p class="font-bold text-black mb-1">No jobs inside <strong>{{ folder.name }}</strong> yet.</p>
+                                    <p class="text-xs text-gray-600 mb-4 font-medium">Add your applied links and roles to track them here.</p>
+                                    <button type="button" class="btn-primary text-xs cursor-pointer" onclick="toggleAddJobForm('{{ folder.pk }}')">
+                                        <i class="fas fa-plus text-white"></i>
+                                        <span>Add First Job Link</span>
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                {% endfor %}
+
+                <!-- Unassigned Content Pane (if any) -->
+                {% if unassigned_jobs %}
+                    <div class="folder-content-pane transition-all duration-200 ease-out {% if selected_folder_id != 'unassigned' %}hidden{% endif %}"
+                         id="folder-content-unassigned">
+                        <div class="card p-6 mb-6">
+                            <div class="flex items-center justify-between pb-4 border-b-2 border-black mb-6">
+                                <div>
+                                    <h2 class="text-xl font-bold text-black">Uncategorized Applications</h2>
+                                    <p class="text-xs text-gray-700 font-medium">Jobs not tied to a specific folder</p>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="border-b-2 border-black">
+                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Organization</th>
+                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Role</th>
+                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Status</th>
+                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Job Link</th>
+                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for job in unassigned_jobs %}
+                                            <tr class="border-b border-black/15 hover:bg-[#faf8f3] transition-colors duration-150">
+                                                <td class="py-3 px-3 text-sm font-bold text-black">{{ job.company_name }}</td>
+                                                <td class="py-3 px-3 text-sm text-black font-medium">{{ job.job_title }}</td>
+                                                <td class="py-3 px-3">
+                                                    <span class="badge text-xs {{ job.status_badge_class }}">
+                                                        {{ job.status }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-3 px-3 text-sm">
+                                                    {% if job.job_url %}
+                                                        <a href="{{ job.job_url }}" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 hover:underline text-xs font-bold">
+                                                            <i class="fas fa-external-link-alt mr-1 text-blue-600 text-[10px]"></i> View Job
+                                                        </a>
+                                                    {% else %}
+                                                        <span class="text-gray-500 text-xs">—</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="py-3 px-3 text-right">
+                                                    <a href="/my-jobs/edit/{{ job.pk }}/" class="text-blue-600 hover:text-blue-800 text-xs font-bold mr-3 inline-flex items-center gap-1">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1" 
+                                                            onclick="openDeleteConfirm('/my-jobs/delete/{{ job.pk }}/', '{{ job.company_name|escapejs }} - {{ job.job_title|escapejs }}', 'job')">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Fallback when no folder is active inside split screen -->
+                <div id="split-no-folder-selected" class="card p-12 text-center {% if selected_folder_id %}hidden{% endif %}">
+                    <div class="w-16 h-16 bg-[#f7f4ee] border-2 border-black rounded-full flex items-center justify-center mx-auto mb-4 shadow-[2px_2px_0px_#000000]">
+                        <i class="fas fa-hand-pointer text-2xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-black mb-1">Select a folder on the left (35%)</h3>
+                    <p class="text-sm text-gray-700 mb-4 max-w-sm mx-auto font-medium">
+                        Click on any App folder in the list on the left to see its job links, role, organization, and status here.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Rename Folder Modal (Sandal White with Black Border) -->
+<div id="renameFolderModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/40 hidden transition-opacity duration-150" onclick="closeRenameModal()">
+    <div class="card p-6 w-full max-w-sm bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_#000000] relative" onclick="event.stopPropagation()">
+        <!-- Window Controls & Header -->
+        <div class="flex items-center justify-between mb-4 pb-3 border-b-2 border-black">
+            <div class="mac-traffic-dots">
+                <span class="mac-dot mac-dot-red"></span>
+                <span class="mac-dot mac-dot-yellow"></span>
+                <span class="mac-dot mac-dot-green"></span>
+            </div>
+            <button type="button" onclick="closeRenameModal()" class="text-black hover:opacity-70 transition-opacity text-sm p-1 rounded cursor-pointer" title="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="flex items-center space-x-3 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-[#f7f4ee] border-2 border-black flex items-center justify-center text-blue-600 text-sm shadow-[1px_1px_0px_#000000]">
+                <i class="fas fa-pen"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-black">Rename App Folder</h3>
+                <p class="text-xs text-gray-600 font-medium">Enter a new name for this platform</p>
+            </div>
+        </div>
+
+        <form method="post" id="renameFolderForm" action="">
+            {% csrf_token %}
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1.5">New Folder Name</label>
+                <input type="text" name="name" id="rename_input" class="input py-2 px-3 text-sm" required autofocus>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t border-black/15">
+                <button type="button" class="btn-secondary text-xs py-1.5 px-3 cursor-pointer" onclick="closeRenameModal()">Cancel</button>
+                <button type="submit" class="btn-primary text-xs py-1.5 px-4 cursor-pointer">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Preset helper
+function setAndSubmitApp(name) {
+    const input = document.getElementById('app_name_input');
+    const form = document.getElementById('quickFolderForm');
+    if (input && form) {
+        input.value = name;
+        form.submit();
+    }
+}
+
+// Rename Folder Modal Handlers
+function openRenameModal(folderId, currentName) {
+    const modal = document.getElementById('renameFolderModal');
+    const input = document.getElementById('rename_input');
+    const form = document.getElementById('renameFolderForm');
+    if (modal && input && form) {
+        form.action = '/my-jobs/folder-edit/' + folderId + '/';
+        input.value = currentName || '';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => input.focus(), 30);
+    }
+}
+
+function closeRenameModal() {
+    const modal = document.getElementById('renameFolderModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+// Toggle inline job add form
+function toggleAddJobForm(folderId) {
+    const formBox = document.getElementById('add-job-form-box-' + folderId);
+    if (formBox) {
+        formBox.classList.toggle('hidden');
+        if (!formBox.classList.contains('hidden')) {
+            const firstInput = formBox.querySelector('input[name="company_name"]');
+            if (firstInput) firstInput.focus();
+        }
+    }
+}
+
+// Open split view with slow, smooth and graceful transition
+function openFolderSplit(folderId, folderName) {
+    const allFoldersView = document.getElementById('all-folders-view');
+    const splitScreenView = document.getElementById('split-screen-view');
+
+    document.body.classList.add('hide-sidebar');
+
+    if (allFoldersView && !allFoldersView.classList.contains('hidden')) {
+        allFoldersView.style.opacity = '0';
+        allFoldersView.style.transform = 'translateY(6px)';
+        setTimeout(function() {
+            allFoldersView.classList.add('hidden');
+            if (splitScreenView) {
+                splitScreenView.classList.remove('hidden');
+                splitScreenView.style.opacity = '0';
+                splitScreenView.style.transform = 'translateY(6px)';
+                void splitScreenView.offsetWidth;
+                splitScreenView.style.opacity = '1';
+                splitScreenView.style.transform = 'translateY(0)';
+                switchFolderTab(folderId, folderName);
+            }
+        }, 160);
+    } else if (splitScreenView) {
+        splitScreenView.classList.remove('hidden');
+        splitScreenView.style.opacity = '1';
+        splitScreenView.style.transform = 'translateY(0)';
+        switchFolderTab(folderId, folderName);
+    }
+
+    const newUrl = '/my-jobs/?folder=' + encodeURIComponent(folderId);
+    window.history.pushState({ folderId: folderId }, '', newUrl);
+}
+
+// Switch active folder tab inside split screen (slow and smooth)
+function switchFolderTab(folderId, folderName) {
+    document.querySelectorAll('.folder-content-pane').forEach(function(el) {
+        el.classList.add('hidden');
+    });
+
+    const noSelection = document.getElementById('split-no-folder-selected');
+    if (noSelection) noSelection.classList.add('hidden');
+
+    document.querySelectorAll('.folder-item-tab').forEach(function(el) {
+        el.classList.remove('active-tab');
+    });
+
+    const targetPane = document.getElementById('folder-content-' + folderId);
+    if (targetPane) {
+        targetPane.classList.remove('hidden');
+    }
+
+    const targetTab = document.getElementById('folder-tab-' + folderId);
+    if (targetTab) {
+        targetTab.classList.add('active-tab');
+    }
+
+    const breadcrumb = document.getElementById('split-active-folder-breadcrumb');
+    if (breadcrumb && folderName) {
+        breadcrumb.textContent = folderName;
+    }
+
+    const newUrl = '/my-jobs/?folder=' + encodeURIComponent(folderId);
+    window.history.replaceState({ folderId: folderId }, '', newUrl);
+}
+
+// Exit split view and return to full folder grid with slow, smooth transition
+function closeFolderSplit() {
+    const allFoldersView = document.getElementById('all-folders-view');
+    const splitScreenView = document.getElementById('split-screen-view');
+
+    document.body.classList.remove('hide-sidebar');
+
+    if (splitScreenView && !splitScreenView.classList.contains('hidden')) {
+        splitScreenView.style.opacity = '0';
+        splitScreenView.style.transform = 'translateY(6px)';
+        setTimeout(function() {
+            splitScreenView.classList.add('hidden');
+            if (allFoldersView) {
+                allFoldersView.classList.remove('hidden');
+                allFoldersView.style.opacity = '0';
+                allFoldersView.style.transform = 'translateY(6px)';
+                void allFoldersView.offsetWidth;
+                allFoldersView.style.opacity = '1';
+                allFoldersView.style.transform = 'translateY(0)';
+            }
+        }, 160);
+    } else if (allFoldersView) {
+        allFoldersView.classList.remove('hidden');
+        allFoldersView.style.opacity = '1';
+        allFoldersView.style.transform = 'translateY(0)';
+    }
+
+    window.history.pushState({}, '', '/my-jobs/');
+}
+
+window.addEventListener('popstate', function(event) {
+    const params = new URLSearchParams(window.location.search);
+    const folderId = params.get('folder');
+    if (folderId) {
+        openFolderSplit(folderId);
+    } else {
+        closeFolderSplit();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const folderId = params.get('folder');
+    if (folderId) {
+        document.body.classList.add('hide-sidebar');
+        const targetPane = document.getElementById('folder-content-' + folderId);
+        if (targetPane) {
+            targetPane.classList.remove('hidden');
+        }
+    }
+});
+</script>
+{% endblock %}

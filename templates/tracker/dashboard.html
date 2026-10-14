@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs Dashboard - My Tracker{% endblock %}
+{% block page_title %}Jobs Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-black tracking-tight">Welcome back, {{ user.username }}!</h1>
+            <p class="text-sm text-gray-700 mt-1 font-medium">Here is your job applications tracking dashboard and pipeline overview.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="/my-jobs/" class="btn-primary">
+                <i class="fas fa-folder-open text-white"></i>
+                <span>Open Job Folders</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid (Sandal White Cards, Crisp Black Borders, Flawless Alignment) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Total Applications -->
+        <div class="stat-card">
+            <div class="flex items-center justify-between w-full mb-4">
+                <div class="w-11 h-11 rounded-xl bg-[#f7f4ee] border-2 border-black flex items-center justify-center flex-shrink-0 shadow-[1.5px_1.5px_0px_#000000]">
+                    <i class="fas fa-briefcase text-blue-600 text-base"></i>
+                </div>
+                <span class="badge text-[11px] font-bold tracking-wider uppercase py-1 px-2.5">Total Jobs</span>
+            </div>
+            <div class="mt-auto">
+                <div class="text-3xl font-extrabold text-black leading-none mb-1.5">{{ total_jobs }}</div>
+                <div class="text-xs text-gray-600 font-medium">Applications logged</div>
+            </div>
+        </div>
+
+        <!-- In Interview -->
+        <div class="stat-card">
+            <div class="flex items-center justify-between w-full mb-4">
+                <div class="w-11 h-11 rounded-xl bg-[#f7f4ee] border-2 border-black flex items-center justify-center flex-shrink-0 shadow-[1.5px_1.5px_0px_#000000]">
+                    <i class="fas fa-comments text-amber-500 text-base"></i>
+                </div>
+                <span class="badge text-[11px] font-bold tracking-wider uppercase py-1 px-2.5">Interviewing</span>
+            </div>
+            <div class="mt-auto">
+                <div class="text-3xl font-extrabold text-black leading-none mb-1.5">{{ interview_count }}</div>
+                <div class="text-xs text-gray-600 font-medium">Active interview rounds</div>
+            </div>
+        </div>
+
+        <!-- Offers Received -->
+        <div class="stat-card">
+            <div class="flex items-center justify-between w-full mb-4">
+                <div class="w-11 h-11 rounded-xl bg-[#f7f4ee] border-2 border-black flex items-center justify-center flex-shrink-0 shadow-[1.5px_1.5px_0px_#000000]">
+                    <i class="fas fa-trophy text-emerald-600 text-base"></i>
+                </div>
+                <span class="badge text-[11px] font-bold tracking-wider uppercase py-1 px-2.5">Offers</span>
+            </div>
+            <div class="mt-auto">
+                <div class="text-3xl font-extrabold text-black leading-none mb-1.5">{{ offer_count }}</div>
+                <div class="text-xs text-gray-600 font-medium">Job offers secured</div>
+            </div>
+        </div>
+
+        <!-- App Folders Count -->
+        <div class="stat-card">
+            <div class="flex items-center justify-between w-full mb-4">
+                <div class="w-11 h-11 rounded-xl bg-[#f7f4ee] border-2 border-black flex items-center justify-center flex-shrink-0 shadow-[1.5px_1.5px_0px_#000000]">
+                    <i class="fas fa-folder text-indigo-600 text-base"></i>
+                </div>
+                <span class="badge text-[11px] font-bold tracking-wider uppercase py-1 px-2.5">App Folders</span>
+            </div>
+            <div class="mt-auto">
+                <div class="text-3xl font-extrabold text-black leading-none mb-1.5">{{ folders.count }}</div>
+                <div class="text-xs text-gray-600 font-medium">Platforms / Apps</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Folders Grid (LinkedIn, Indeed, etc.) -->
+    <div class="card p-6">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center space-x-2.5">
+                <i class="fas fa-folder-open text-indigo-600 text-base"></i>
+                <h2 class="text-base font-bold text-black">Your App Folders</h2>
+            </div>
+            <a href="/my-jobs/" class="text-xs text-black hover:opacity-70 font-bold flex items-center gap-1">
+                <span>Manage Folders</span>
+                <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        {% if folders %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {% for folder in folders %}
+                    <a href="/my-jobs/?folder={{ folder.pk }}" class="interactive-card p-4 rounded-xl block group">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#f7f4ee] border-2 border-black flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                                {% if "linkedin" in folder.name|lower %}
+                                    <i class="fab fa-linkedin text-[#0077b5] text-lg"></i>
+                                {% elif "indeed" in folder.name|lower %}
+                                    <i class="fas fa-briefcase text-[#003a9b] text-lg"></i>
+                                {% elif "wellfound" in folder.name|lower %}
+                                    <i class="fas fa-handshake text-[#ff6154] text-lg"></i>
+                                {% elif "glassdoor" in folder.name|lower %}
+                                    <i class="fas fa-door-open text-[#0caa41] text-lg"></i>
+                                {% elif "referral" in folder.name|lower %}
+                                    <i class="fas fa-user-friends text-[#9333ea] text-lg"></i>
+                                {% else %}
+                                    <i class="fas fa-folder text-[#eab308] text-lg"></i>
+                                {% endif %}
+                            </div>
+                            <span class="badge text-[11px] font-bold py-0.5 px-2">
+                                {{ folder.job_count }} job{{ folder.job_count|pluralize }}
+                            </span>
+                        </div>
+                        <h3 class="text-sm font-bold text-black truncate">{{ folder.name }}</h3>
+                        <p class="text-[11px] text-gray-600 mt-1 font-semibold group-hover:underline flex items-center gap-1">
+                            <span>Open in split view</span>
+                            <span class="text-[10px]">&rarr;</span>
+                        </p>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="py-8 text-center text-sm text-gray-700">
+                <p class="mb-3 font-medium">No App Folders created yet.</p>
+                <a href="/my-jobs/" class="btn-primary text-xs inline-flex items-center gap-1">
+                    <i class="fas fa-plus text-white"></i>
+                    <span>Create Your First Folder (LinkedIn, Indeed...)</span>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Job Applications Table -->
+    <div class="card p-6">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center space-x-2.5">
+                <i class="fas fa-list-alt text-blue-600 text-base"></i>
+                <h2 class="text-base font-bold text-black">Recent Job Applications</h2>
+            </div>
+            <a href="/my-jobs/" class="text-xs text-black hover:opacity-70 font-bold flex items-center gap-1">
+                <span>View All Jobs</span>
+                <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        {% if recent_jobs %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b-2 border-black">
+                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Organization</th>
+                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Role</th>
+                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Platform / Folder</th>
+                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Status</th>
+                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Job Link</th>
+                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in recent_jobs %}
+                            <tr class="border-b border-black/15 hover:bg-[#faf8f3] transition-colors duration-150">
+                                <td class="py-3.5 px-3 text-sm font-bold text-black">
+                                    {{ job.company_name }}
+                                    {% if job.notes %}
+                                        <div class="text-[11px] text-gray-600 font-normal truncate max-w-xs">{{ job.notes }}</div>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3 text-sm text-black font-medium">{{ job.job_title }}</td>
+                                <td class="py-3.5 px-3 text-sm">
+                                    {% if job.folder %}
+                                        <a href="/my-jobs/?folder={{ job.folder.pk }}" class="inline-flex items-center text-xs text-black hover:underline font-semibold">
+                                            <i class="fas fa-folder text-[#eab308] mr-1.5 text-xs"></i>
+                                            {{ job.folder.name }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-xs text-gray-500 font-medium">Uncategorized</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    <span class="badge text-xs {{ job.status_badge_class }}">
+                                        {{ job.status }}
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-3 text-sm">
+                                    {% if job.job_url %}
+                                        <a href="{{ job.job_url }}" target="_blank" rel="noopener" 
+                                           class="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline font-bold text-xs">
+                                            <i class="fas fa-external-link-alt mr-1 text-blue-600 text-[10px]"></i>
+                                            <span>Open Link</span>
+                                        </a>
+                                    {% else %}
+                                        <span class="text-gray-500 text-xs">No Link</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3 text-right whitespace-nowrap">
+                                    <a href="/my-jobs/edit/{{ job.pk }}/" class="text-blue-600 hover:text-blue-800 text-xs font-bold mr-3 inline-flex items-center gap-1">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <button type="button" 
+                                            class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1" 
+                                            onclick="openDeleteConfirm('/my-jobs/delete/{{ job.pk }}/', '{{ job.company_name|escapejs }} - {{ job.job_title|escapejs }}', 'job')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="py-12 text-center text-sm text-gray-700">
+                <div class="w-12 h-12 bg-[#f4efe6] border-2 border-black rounded-full flex items-center justify-center mx-auto mb-3 shadow-[1px_1px_0px_#000000]">
+                    <i class="fas fa-briefcase text-blue-600"></i>
+                </div>
+                <p class="font-bold text-black mb-1">No job applications logged yet.</p>
+                <p class="text-xs text-gray-600 mb-4 font-medium">Go to My Jobs to create folders and start tracking your jobs.</p>
+                <a href="/my-jobs/" class="btn-primary text-xs inline-flex items-center gap-1">
+                    <i class="fas fa-plus text-white"></i>
+                    <span>Start Tracking Jobs</span>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

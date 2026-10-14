@@ -1,0 +1,46 @@
+# ==============================================================================
+# Render.com Infrastructure Blueprint
+# ==============================================================================
+services:
+  - type: web
+    name: ai-learning-tracker
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    healthCheckPath: "/health/"
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.14.0"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: HEALTHCHECK_APPLICATION_URL
+        sync: false
+      - key: HEALTHCHECK_ADMIN_USERNAME
+        value: "kanishkan"
+      - key: HEALTHCHECK_TIME_ZONE
+        value: "UTC"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: "resumes"
+      - key: USER_1_USERNAME
+        value: "kanishkan"
+      - key: USER_1_PASSWORD
+        value: "Kanishkan@2004"
+      - key: USER_2_USERNAME
+        value: "preetha"
+      - key: USER_2_PASSWORD
+        value: "Preetha@2005"
