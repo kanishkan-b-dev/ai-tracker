@@ -32,28 +32,40 @@ USER_2_PASSWORD = os.environ.get('USER_2_PASSWORD', 'Preetha@2005')
 RENDER_USERS = os.environ.get('RENDER_USERS', '').strip()
 
 
+# Render Environment & Host Detection
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '').strip()
+if RENDER_EXTERNAL_HOSTNAME and not HEALTHCHECK_APPLICATION_URL:
+    HEALTHCHECK_APPLICATION_URL = f"https://{RENDER_EXTERNAL_HOSTNAME}"
+
+# ALLOWED_HOSTS Configuration
+# Render health checks ping internal private IPs (10.x.x.x) and Go-http-client on 127.0.0.1.
+# On Render (RENDER=true), allow wildcard '*' so internal health checks return 200 OK without DisallowedHost 400.
 raw_hosts = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 ALLOWED_HOSTS = [h.strip() for h in raw_hosts if h.strip()]
-if HEALTHCHECK_APPLICATION_URL:
-    try:
-        from urllib.parse import urlparse
-        parsed = urlparse(HEALTHCHECK_APPLICATION_URL)
-        if parsed.hostname and parsed.hostname not in ALLOWED_HOSTS:
-            ALLOWED_HOSTS.append(parsed.hostname)
-    except Exception:
-        pass
-if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['*']
 
+if os.environ.get('RENDER') or '*' in ALLOWED_HOSTS or not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*']
+else:
+    for host in ['localhost', '127.0.0.1', '[::1]', '.onrender.com']:
+        if host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(host)
+
+# CSRF Trusted Origins
 raw_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://127.0.0.1,http://localhost').split(',')
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in raw_origins if origin.strip()]
+
+if RENDER_EXTERNAL_HOSTNAME:
+    ext_origin = f"https://{RENDER_EXTERNAL_HOSTNAME}"
+    if ext_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(ext_origin)
+
 if HEALTHCHECK_APPLICATION_URL and HEALTHCHECK_APPLICATION_URL not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append(HEALTHCHECK_APPLICATION_URL)
-for host in ALLOWED_HOSTS:
-    if host not in ('*', 'localhost', '127.0.0.1') and not host.startswith('.'):
-        origin = f"https://{host}"
-        if origin not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TRUSTED_ORIGINS.append(origin)
+
+# Wildcard for all Render subdomains to prevent any CSRF issues
+if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
+
 
 # Redis Cache Integration
 REDIS_URL = os.environ.get('REDIS_URL', '').strip()
