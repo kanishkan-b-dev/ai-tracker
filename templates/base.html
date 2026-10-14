@@ -123,6 +123,10 @@
 
         .sidebar-nav {
             padding: 1rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            perspective: 1000px;
         }
 
         /* Sandal White Top Nav with Crisp Black Border and GPU Compositing Layer */
@@ -218,12 +222,14 @@
             font-weight: 700 !important;
         }
 
-        /* 3. Navigation Items (Prominent Smooth 3D Zoom on Hover, No Black Border, No Shadow) */
+        /* 3. Navigation Items (Clean 3D Zoom on Hover, No Collision, No Black Border, No Shadow) */
         .nav-item {
+            position: relative;
+            z-index: 1;
             display: flex;
             align-items: center;
             padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0;
             border-radius: 0.65rem;
             color: #18181b !important;
             background: transparent !important;
@@ -247,33 +253,36 @@
         }
 
         .nav-item:hover {
+            z-index: 20;
             color: #000000 !important;
             background: #ede8dc !important;
             border-color: transparent !important;
             box-shadow: none !important;
-            transform: scale(1.08) translateX(4px) translateZ(0) !important;
+            transform: scale(1.06) translateX(5px) translateZ(0) !important;
         }
 
         .nav-item:hover i {
-            transform: scale(1.22);
+            transform: scale(1.2);
         }
 
         .nav-item.active {
+            z-index: 2;
             color: #ffffff !important;
             background: #000000 !important;
             border: 1.5px solid #000000 !important;
             font-weight: 700 !important;
             box-shadow: none !important;
-            transform: scale(1.02) translateZ(0) !important;
+            transform: translateZ(0) !important;
             transform-origin: left center;
         }
 
         .nav-item.active:hover {
+            z-index: 20;
             color: #ffffff !important;
             background: #000000 !important;
             border-color: #000000 !important;
             box-shadow: none !important;
-            transform: scale(1.08) translateX(4px) translateZ(0) !important;
+            transform: scale(1.06) translateX(5px) translateZ(0) !important;
         }
 
         .nav-item.active i,

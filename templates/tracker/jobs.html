@@ -203,7 +203,7 @@
     <div id="split-screen-view" class="w-full view-transition {% if not selected_folder_id %}hidden{% endif %}">
         
         <!-- Top Toolbar for Split View -->
-        <div class="mb-5 flex flex-wrap items-center justify-between gap-3 pb-3 border-b-2 border-black">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b-2 border-black">
             <div class="flex items-center space-x-3">
                 <button type="button" class="btn-secondary text-xs py-1.5 px-3.5 cursor-pointer" onclick="closeFolderSplit()">
                     <i class="fas fa-arrow-left"></i>
@@ -237,25 +237,25 @@
             
             <!-- 35% LEFT SIDE: USER'S FOLDERS -->
             <div class="w-full lg:w-[35%] flex-shrink-0">
-                <div class="card p-4 sticky top-20">
+                <div class="card p-4 sticky top-24">
                     
-                    <div class="flex items-center justify-between mb-3 pb-2 border-b-2 border-black">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b-2 border-black">
                         <div class="flex items-center space-x-2">
                             <i class="fas fa-folder-open text-[#eab308]"></i>
-                            <h2 class="text-sm font-bold text-black">Your Folders (35%)</h2>
+                            <h2 class="text-sm font-bold text-black">Your Folders</h2>
                         </div>
                         <span class="badge text-xs font-bold">{{ folders.count }}</span>
                     </div>
 
                     <!-- Mini Add Folder Input inside 35% side -->
-                    <form method="post" action="{% url 'quick_add_folder' %}" class="flex gap-2 mb-4">
+                    <form method="post" action="{% url 'quick_add_folder' %}" class="flex gap-2 mb-5">
                         {% csrf_token %}
                         <input type="text" 
                                name="app_name" 
-                               class="input py-1.5 px-2.5 text-xs flex-1" 
+                               class="input py-2 px-3 text-xs flex-1" 
                                placeholder="+ New Folder (e.g. Indeed)..." 
                                required>
-                        <button type="submit" class="btn-primary text-xs py-1.5 px-3 whitespace-nowrap cursor-pointer">
+                        <button type="submit" class="btn-primary text-xs py-2 px-3.5 whitespace-nowrap cursor-pointer">
                             <span>Add</span>
                         </button>
                     </form>
@@ -654,8 +654,6 @@ function openFolderSplit(folderId, folderName) {
     const allFoldersView = document.getElementById('all-folders-view');
     const splitScreenView = document.getElementById('split-screen-view');
 
-    document.body.classList.add('hide-sidebar');
-
     if (allFoldersView && !allFoldersView.classList.contains('hidden')) {
         allFoldersView.style.opacity = '0';
         allFoldersView.style.transform = 'translateY(6px)';
@@ -719,8 +717,6 @@ function closeFolderSplit() {
     const allFoldersView = document.getElementById('all-folders-view');
     const splitScreenView = document.getElementById('split-screen-view');
 
-    document.body.classList.remove('hide-sidebar');
-
     if (splitScreenView && !splitScreenView.classList.contains('hidden')) {
         splitScreenView.style.opacity = '0';
         splitScreenView.style.transform = 'translateY(6px)';
@@ -758,7 +754,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
     const folderId = params.get('folder');
     if (folderId) {
-        document.body.classList.add('hide-sidebar');
         const targetPane = document.getElementById('folder-content-' + folderId);
         if (targetPane) {
             targetPane.classList.remove('hidden');
