@@ -218,7 +218,7 @@
             font-weight: 700 !important;
         }
 
-        /* 3. Navigation Items */
+        /* 3. Navigation Items (Smooth 3D Zoom on Hover, No Black Border, No Shadow) */
         .nav-item {
             display: flex;
             align-items: center;
@@ -231,19 +231,30 @@
             text-decoration: none;
             font-size: 0.875rem;
             font-weight: 600;
-            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+            box-shadow: none !important;
+            transform: scale(1) translateZ(0);
+            backface-visibility: hidden;
+            will-change: transform;
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.28s ease, color 0.28s ease !important;
         }
 
         .nav-item i {
             width: 22px;
             margin-right: 0.75rem;
             font-size: 0.95rem;
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .nav-item:hover {
             color: #000000 !important;
             background: #ede8dc !important;
-            border-color: #000000 !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+            transform: scale(1.04) translateX(3px) translateZ(0) !important;
+        }
+
+        .nav-item:hover i {
+            transform: scale(1.15);
         }
 
         .nav-item.active {
@@ -251,7 +262,16 @@
             background: #000000 !important;
             border: 1.5px solid #000000 !important;
             font-weight: 700 !important;
-            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3) !important;
+            box-shadow: none !important;
+            transform: scale(1.02) translateZ(0) !important;
+        }
+
+        .nav-item.active:hover {
+            color: #ffffff !important;
+            background: #000000 !important;
+            border-color: #000000 !important;
+            box-shadow: none !important;
+            transform: scale(1.04) translateX(3px) translateZ(0) !important;
         }
 
         .nav-item.active i,
