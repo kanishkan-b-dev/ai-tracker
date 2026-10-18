@@ -110,6 +110,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'tracker.middleware.AbsoluteSessionTimeoutMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -180,6 +181,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+SESSION_COOKIE_AGE = 15 * 60
+SESSION_SAVE_EVERY_REQUEST = False
 
 # Email backend (console by default for dev, easily configured via env)
 EMAIL_BACKEND = os.environ.get(

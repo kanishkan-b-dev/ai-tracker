@@ -8,6 +8,7 @@ JobTrack is a full-featured, developer-first job application tracking workspace 
 
 1. **Authentication & User Data Isolation**
    - Secure Django registration, authentication, login/logout, and password update.
+   - Sessions expire 15 minutes after login, even while active, with a visible countdown and a 30-second warning.
    - Strict database-level isolation: Each user only accesses their own applications, interviews, notes, contacts, and telemetry.
 
 2. **Operations Dashboard**
@@ -132,4 +133,3 @@ pip install -r requirements.txt && python manage.py collectstatic --noinput && p
 python manage.py runserver 0.0.0.0:$PORT
 ```
 *(Or with gunicorn/uvicorn: `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`)*
-

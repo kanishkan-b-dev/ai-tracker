@@ -370,4 +370,3 @@ def healthcheck_view(request):
 
     status_code = 200 if health["status"] in ("healthy", "ok") else 503
     return JsonResponse(health, status=status_code)
-

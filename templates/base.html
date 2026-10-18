@@ -707,6 +707,10 @@
                     <div class="text-sm font-medium text-white">{{ user.username }}</div>
                     <div class="text-xs text-gray-400">{{ user.email|default:"user@example.com" }}</div>
                 </div>
+                <div class="text-xs font-medium text-black whitespace-nowrap" id="session-countdown"
+                    data-expires-at="{{ request.session.auth_expires_at }}" aria-live="off">
+                    Session ends in <span id="session-countdown-value">15:00</span>
+                </div>
                 <a href="/logout/"
                     class="text-gray-400 hover:text-red-400 ml-2 p-1.5 rounded-lg border border-transparent hover:border-white transition-colors"
                     title="Logout">
@@ -914,6 +918,43 @@
             </form>
         </div>
     </div>
+    <dialog id="sessionExpiryDialog"
+        class="w-[calc(100%-2rem)] max-w-md rounded-xl border-2 border-black p-6 shadow-[4px_4px_0px_#000000] backdrop:bg-black/50">
+        <h2 class="mb-2 text-lg font-bold text-black">Your session is about to expire</h2>
+        <p class="mb-5 text-sm text-gray-700">You will be logged out in 30 seconds.</p>
+        <div class="flex justify-end">
+            <button type="button" class="btn-primary text-xs py-2 px-4 cursor-pointer"
+                onclick="document.getElementById('sessionExpiryDialog').close()">
+                Got it
+            </button>
+        </div>
+    </dialog>
+    <script>
+        (function () {
+            const countdown = document.getElementById('session-countdown');
+            const value = document.getElementById('session-countdown-value');
+            const warning = document.getElementById('sessionExpiryDialog');
+            if (!countdown || !value || !warning) return;
+
+            const expiresAt = Number(countdown.dataset.expiresAt) * 1000;
+            let warningShown = false;
+            const updateCountdown = function () {
+                const secondsLeft = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+                const minutes = Math.floor(secondsLeft / 60);
+                const seconds = secondsLeft % 60;
+                value.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+                if (secondsLeft <= 30 && !warningShown) {
+                    warningShown = true;
+                    if (typeof warning.showModal === 'function') warning.showModal();
+                }
+                if (secondsLeft === 0) window.location.assign("{% url 'logout' %}");
+            };
+
+            updateCountdown();
+            window.setInterval(updateCountdown, 1000);
+        })();
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 
