@@ -724,7 +724,6 @@
                 <div class="user-avatar">{{ user.username|first|upper }}</div>
                 <div class="hidden sm:block">
                     <div class="text-sm font-medium text-white">{{ user.username }}</div>
-                    <div class="text-xs text-gray-400">{{ user.email|default:"user@example.com" }}</div>
                 </div>
                 <div class="session-countdown-card flex items-center gap-2 px-3 py-1.5 text-black whitespace-nowrap"
                     id="session-countdown" data-expires-at="{{ request.session.auth_expires_at }}" aria-live="off">

