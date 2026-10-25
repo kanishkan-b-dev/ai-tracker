@@ -46,6 +46,9 @@
                         <table class="w-full text-left">
                             <thead>
                                 <tr class="border-b-2 border-black">
+                                    <th class="py-3 px-4 text-xs font-bold text-black uppercase tracking-wider w-28">
+                                        <i class="far fa-calendar-alt mr-1"></i> Date
+                                    </th>
                                     <th class="py-3 px-4 text-xs font-bold text-black uppercase tracking-wider">Organization</th>
                                     <th class="py-3 px-4 text-xs font-bold text-black uppercase tracking-wider">Role</th>
                                     <th class="py-3 px-4 text-xs font-bold text-black uppercase tracking-wider">Status</th>
@@ -55,6 +58,12 @@
                             <tbody>
                                 {% for job in jobs %}
                                     <tr class="border-b border-black/15 hover:bg-[#faf8f3] transition-colors duration-150">
+                                        <td class="py-3 px-4 text-xs whitespace-nowrap">
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#f4efe6] border border-black/20 font-semibold text-black text-[11px]">
+                                                <i class="far fa-calendar text-gray-600 text-[10px]"></i>
+                                                {{ job.application_date|date:"M d, Y" }}
+                                            </span>
+                                        </td>
                                         <td class="py-3 px-4 text-sm text-black font-bold">{{ job.company_name }}</td>
                                         <td class="py-3 px-4 text-sm text-black font-medium">{{ job.job_title }}</td>
                                         <td class="py-3 px-4">

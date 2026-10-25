@@ -17,7 +17,7 @@ JobTrack is a full-featured, developer-first job application tracking workspace 
    - Audit activity stream tracking application creation, status transitions, and note updates.
 
 3. **Job Application Management (CRUD)**
-   - Application statuses: `Interested`, `Under Consideration`, `Applied`, `Interview`, `Offer`, and `Rejected`.
+   - Application statuses: `Interested`, `Und Con`, `Applied`, `Interview`, `Offer`, and `Rejected`.
    - Real-time search by company, job title, and skills.
    - Multi-parameter filtering by status, work arrangement (Remote/Hybrid/On-site), priority, and date.
    - In-place quick status dropdown updates with Fetch API.

@@ -6,22 +6,26 @@
 {% block content %}
 <style>
     .view-transition {
-        transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+        transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), transform 0.45s cubic-bezier(0.22, 1, 0.36, 1) !important;
         will-change: opacity, transform;
     }
     .folder-content-pane {
-        animation: paneFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+        animation: paneFadeIn 1.25s cubic-bezier(0.16, 1, 0.3, 1);
         will-change: opacity, transform;
     }
     @keyframes paneFadeIn {
         0% {
             opacity: 0;
-            transform: translateY(8px);
+            transform: translateY(22px);
         }
         100% {
             opacity: 1;
             transform: translateY(0);
         }
+    }
+    .date-filter-chip.active-date-chip {
+        background-color: #000000 !important;
+        color: #ffffff !important;
     }
 </style>
 <div class="w-full">
@@ -35,13 +39,18 @@
                     <i class="fas fa-folder text-[#eab308] text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-black tracking-tight">Job Folders</h1>
-                    <p class="text-sm text-gray-700 font-medium">Select any App folder to open the split-screen view with your job links and applications.</p>
+                    <h1 class="text-2xl font-bold text-black tracking-tight">Job Folders & Applications</h1>
+                    <p class="text-sm text-gray-700 font-medium">Classify by platform folder or track how much you have applied on every single date.</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3">
                 <span class="badge text-xs font-bold">{{ folders.count }} App Folder{{ folders.count|pluralize }}</span>
                 <span class="badge text-xs font-bold">{{ total_jobs }} Job Application{{ total_jobs|pluralize }}</span>
+                {% if today_total_jobs %}
+                    <span class="badge text-xs font-bold bg-emerald-100 text-emerald-800 border-emerald-300">
+                        <i class="far fa-calendar-check mr-1"></i> {{ today_total_jobs }} Applied Today
+                    </span>
+                {% endif %}
             </div>
         </div>
 
@@ -54,7 +63,7 @@
                     </div>
                     <div>
                         <h2 class="text-base font-bold text-black">Add New App / Platform (Folder)</h2>
-                        <p class="text-xs text-gray-700">Type an app like <strong>LinkedIn</strong> or <strong>Indeed</strong>, hit Okay, and immediately start filling your job links & details.</p>
+                        <p class="text-xs text-gray-700">Type an app like <strong>LinkedIn</strong> or <strong>Indeed</strong>, hit Okay, and immediately start organizing your job applications by date.</p>
                     </div>
                 </div>
                 <!-- Quick Preset Chips -->
@@ -95,12 +104,15 @@
 
         <!-- Only Folders Shown Here -->
         <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-lg font-bold text-black">Your App Folders</h2>
-            <span class="text-xs text-gray-700 font-medium">Click any folder to open split view</span>
+            <h2 class="text-lg font-bold text-black flex items-center gap-2">
+                <i class="fas fa-folder-open text-[#eab308]"></i>
+                <span>Your App Folders</span>
+            </h2>
+            <span class="text-xs text-gray-700 font-medium">Click any folder to open split view with daily date classification</span>
         </div>
 
         {% if folders or unassigned_jobs %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                 {% for folder in folders %}
                     <div class="interactive-card p-6 cursor-pointer relative group flex flex-col justify-between rounded-xl"
                          onclick="openFolderSplit('{{ folder.pk }}', '{{ folder.name|escapejs }}')">
@@ -138,12 +150,35 @@
                                     </button>
                                 </div>
                             </div>
-                            <h3 class="text-lg font-bold text-black mb-1">{{ folder.name }}</h3>
-                            <p class="text-xs text-gray-600 mb-4 font-medium">Created {{ folder.created_at|date:"M d, Y" }}</p>
+                            <h3 class="text-lg font-bold text-black mb-1.5">{{ folder.name }}</h3>
+                            
+                            <!-- Date Information and Classification info -->
+                            <div class="space-y-1 mb-4">
+                                <p class="text-xs text-gray-600 font-medium flex items-center gap-1.5">
+                                    <i class="far fa-calendar-alt text-gray-500 text-[11px]"></i>
+                                    {% if folder.latest_application_date %}
+                                        <span>Latest applied: <strong class="text-black">{{ folder.latest_application_date|date:"M d, Y" }}</strong></span>
+                                    {% else %}
+                                        <span>No applications yet</span>
+                                    {% endif %}
+                                </p>
+                                <div class="flex items-center gap-2 pt-0.5">
+                                    {% if folder.today_applications_count %}
+                                        <span class="badge text-[10px] bg-emerald-100 text-emerald-800 border-emerald-300 font-bold py-0.5 px-2">
+                                            <i class="fas fa-bolt text-emerald-600 mr-1"></i> {{ folder.today_applications_count }} applied today
+                                        </span>
+                                    {% endif %}
+                                    {% if folder.distinct_dates_count %}
+                                        <span class="badge text-[10px] bg-[#f4efe6] text-gray-800 border-black/20 font-bold py-0.5 px-2">
+                                            <i class="far fa-clock mr-1"></i> {{ folder.distinct_dates_count }} active date{{ folder.distinct_dates_count|pluralize }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                         <div class="pt-4 border-t border-black/15 flex items-center justify-between">
                             <span class="badge text-xs font-bold">
-                                <i class="fas fa-link mr-1 text-black"></i>
+                                <i class="fas fa-briefcase mr-1 text-black"></i>
                                 {{ folder.applications.count }} job{{ folder.applications.count|pluralize }}
                             </span>
                             <span class="text-xs font-bold text-black group-hover:underline flex items-center gap-1">
@@ -164,12 +199,21 @@
                                     <i class="fas fa-folder text-2xl text-gray-500"></i>
                                 </div>
                             </div>
-                            <h3 class="text-lg font-bold text-black mb-1">Uncategorized Jobs</h3>
-                            <p class="text-xs text-gray-600 mb-4 font-medium">Applications not assigned to a specific App</p>
+                            <h3 class="text-lg font-bold text-black mb-1.5">Uncategorized Jobs</h3>
+                            <div class="space-y-1 mb-4">
+                                <p class="text-xs text-gray-600 font-medium flex items-center gap-1.5">
+                                    <i class="far fa-calendar-alt text-gray-500 text-[11px]"></i>
+                                    {% if unassigned_latest_date %}
+                                        <span>Latest applied: <strong class="text-black">{{ unassigned_latest_date|date:"M d, Y" }}</strong></span>
+                                    {% else %}
+                                        <span>Applications not assigned to an App</span>
+                                    {% endif %}
+                                </p>
+                            </div>
                         </div>
                         <div class="pt-4 border-t border-black/15 flex items-center justify-between">
                             <span class="badge text-xs font-bold">
-                                {{ unassigned_jobs.count }} job{{ unassigned_jobs.count|pluralize }}
+                                {{ unassigned_jobs|length }} job{{ unassigned_jobs|length|pluralize }}
                             </span>
                             <span class="text-xs font-bold text-black group-hover:underline flex items-center gap-1">
                                 <span>Open Split View</span>
@@ -180,6 +224,146 @@
                 {% endif %}
 
             </div>
+
+            <!-- Daily Applications Breakdown & Activity Log (Date Classification) -->
+            {% if all_jobs %}
+                {% regroup all_jobs by application_date as all_jobs_by_date %}
+                <div class="card p-6 mb-8">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b-2 border-black">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#f7f4ee] border-2 border-black shadow-[1px_1px_0px_#000000] flex items-center justify-center">
+                                <i class="far fa-calendar-alt text-black text-sm"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-black tracking-tight">Daily Applications Activity & Date Classification</h2>
+                                <p class="text-xs text-gray-700 font-medium">See how many jobs you have applied for on each date across all your app folders.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="badge text-xs font-bold py-1 px-3 bg-black text-white">
+                                {{ all_jobs_by_date|length }} Active Date{{ all_jobs_by_date|length|pluralize }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Daily Group Accordion / Blocks -->
+                    <div class="space-y-6">
+                        {% for date_group in all_jobs_by_date %}
+                            <div class="border-2 border-black rounded-xl overflow-hidden shadow-[2px_2px_0px_#000000] bg-white">
+                                <!-- Date Header Banner -->
+                                <div class="bg-[#f4efe6] px-4 py-3 border-b-2 border-black flex flex-wrap items-center justify-between gap-2">
+                                    <div class="flex items-center space-x-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-white border-2 border-black flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                                            <i class="far fa-calendar-check text-black text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm font-bold text-black">
+                                                    {{ date_group.grouper|date:"l, F j, Y" }}
+                                                </span>
+                                                {% if date_group.grouper == today %}
+                                                    <span class="badge text-[10px] bg-emerald-100 text-emerald-800 border-emerald-400 font-bold uppercase py-0.5 px-2">
+                                                        Today
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <span class="text-[11px] text-gray-600 font-medium">Applications submitted on this date</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="badge text-xs font-bold py-1 px-3 bg-black text-white shadow-[1px_1px_0px_#000000]">
+                                            <i class="fas fa-briefcase text-xs mr-1.5 text-[#eab308]"></i>
+                                            {{ date_group.list|length }} job{{ date_group.list|length|pluralize }} applied
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Table with Date Column -->
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left">
+                                        <thead>
+                                            <tr class="border-b border-black/20 bg-[#faf8f3]">
+                                                <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider w-32">
+                                                    <i class="far fa-calendar-alt mr-1"></i> Date
+                                                </th>
+                                                <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Platform / Folder</th>
+                                                <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Organization</th>
+                                                <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Role</th>
+                                                <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Status</th>
+                                                <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Job Link</th>
+                                                <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for job in date_group.list %}
+                                                <tr class="border-b border-black/10 hover:bg-[#faf8f3] transition-colors duration-150">
+                                                    <td class="py-3 px-3 text-xs whitespace-nowrap">
+                                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#f4efe6] border border-black/20 font-semibold text-black text-[11px]">
+                                                            <i class="far fa-calendar text-gray-600 text-[10px]"></i>
+                                                            {{ job.application_date|date:"M d, Y" }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-3 px-3 text-sm">
+                                                        {% if job.folder %}
+                                                            <button type="button" 
+                                                                    onclick="openFolderSplit('{{ job.folder.pk }}', '{{ job.folder.name|escapejs }}')"
+                                                                    class="inline-flex items-center text-xs text-black hover:underline font-bold bg-transparent border-0 cursor-pointer p-0">
+                                                                <i class="fas fa-folder text-[#eab308] mr-1.5 text-xs"></i>
+                                                                {{ job.folder.name }}
+                                                            </button>
+                                                        {% else %}
+                                                            <button type="button" 
+                                                                    onclick="openFolderSplit('unassigned', 'Uncategorized')"
+                                                                    class="text-xs text-gray-500 font-medium bg-transparent border-0 cursor-pointer p-0 hover:underline">
+                                                                Uncategorized
+                                                            </button>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="py-3 px-3 text-sm font-bold text-black">
+                                                        {{ job.company_name }}
+                                                        {% if job.notes %}
+                                                            <div class="text-[11px] text-gray-600 font-normal truncate max-w-xs">{{ job.notes }}</div>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="py-3 px-3 text-sm text-black font-medium">{{ job.job_title }}</td>
+                                                    <td class="py-3 px-3">
+                                                        <span class="badge text-xs {{ job.status_badge_class }}">
+                                                            {{ job.status }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-3 px-3 text-sm">
+                                                        {% if job.job_url %}
+                                                            <a href="{{ job.job_url }}" target="_blank" rel="noopener"
+                                                               class="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline font-bold text-xs">
+                                                                <i class="fas fa-external-link-alt mr-1 text-blue-600 text-[10px]"></i>
+                                                                <span>Open Link</span>
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-gray-500 text-xs">No Link</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="py-3 px-3 text-right whitespace-nowrap">
+                                                        <a href="/my-jobs/edit/{{ job.pk }}/" class="text-blue-600 hover:text-blue-800 text-xs font-bold mr-3 inline-flex items-center gap-1" title="Edit">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </a>
+                                                        <button type="button"
+                                                                class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1"
+                                                                onclick="openDeleteConfirm('/my-jobs/delete/{{ job.pk }}/', '{{ job.company_name|escapejs }} - {{ job.job_title|escapejs }}', 'job')"
+                                                                title="Delete">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
         {% else %}
             <!-- Empty state for folders -->
             <div class="card p-12 text-center">
@@ -199,7 +383,7 @@
     </div>
 
 
-    <!-- Mode 2: 35 : 75 RATIO SPLIT SCREEN VIEW -->
+    <!-- Mode 2: 35 : 65 RATIO SPLIT SCREEN VIEW -->
     <div id="split-screen-view" class="w-full view-transition {% if not selected_folder_id %}hidden{% endif %}">
         
         <!-- Top Toolbar for Split View -->
@@ -225,6 +409,9 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
+                <span class="badge text-xs font-bold py-1 px-3">
+                    <i class="far fa-calendar-alt mr-1"></i> {{ total_jobs }} Total Applications
+                </span>
                 <button type="button" class="btn-secondary text-xs py-1.5 px-3 cursor-pointer" onclick="toggleSidebarBanner()" title="Show/Hide Left Banner">
                     <i class="fas fa-columns"></i>
                     <span>Toggle Main Menu</span>
@@ -232,7 +419,7 @@
             </div>
         </div>
 
-        <!-- The 35 : 75 Split Layout -->
+        <!-- The 35 : 65 Split Layout -->
         <div class="flex flex-col lg:flex-row gap-6 items-start w-full">
             
             <!-- 35% LEFT SIDE: USER'S FOLDERS -->
@@ -277,6 +464,10 @@
                                             <i class="fas fa-briefcase text-[#003a9b] text-sm"></i>
                                         {% elif "wellfound" in folder.name|lower %}
                                             <i class="fas fa-handshake text-[#ff6154] text-sm"></i>
+                                        {% elif "glassdoor" in folder.name|lower %}
+                                            <i class="fas fa-door-open text-[#0caa41] text-sm"></i>
+                                        {% elif "referral" in folder.name|lower %}
+                                            <i class="fas fa-user-friends text-[#9333ea] text-sm"></i>
                                         {% else %}
                                             <i class="fas fa-folder text-[#eab308] text-sm"></i>
                                         {% endif %}
@@ -318,14 +509,14 @@
                                     </div>
                                     <span class="text-sm font-bold text-black truncate">Uncategorized</span>
                                 </div>
-                                <span class="badge text-[11px] py-0.5 px-2 font-bold">{{ unassigned_jobs.count }}</span>
+                                <span class="badge text-[11px] py-0.5 px-2 font-bold">{{ unassigned_jobs|length }}</span>
                             </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- 75% RIGHT SIDE: JOB LINKS & APPLICATION DATA -->
+            <!-- 65% RIGHT SIDE: JOB LINKS & APPLICATION DATA (CLASSIFIED BY DATE) -->
             <div class="w-full lg:w-[65%] flex-1">
                 
                 <!-- Containers for each folder's jobs (smooth client switching) -->
@@ -338,7 +529,15 @@
                             <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b-2 border-black mb-6">
                                 <div class="flex items-center space-x-3">
                                     <div class="w-10 h-10 rounded-xl bg-[#f7f4ee] border-2 border-black shadow-[1px_1px_0px_#000000] flex items-center justify-center">
-                                        <i class="fas fa-briefcase text-blue-600 text-sm"></i>
+                                        {% if "linkedin" in folder.name|lower %}
+                                            <i class="fab fa-linkedin text-xl text-[#0077b5]"></i>
+                                        {% elif "indeed" in folder.name|lower %}
+                                            <i class="fas fa-briefcase text-xl text-[#003a9b]"></i>
+                                        {% elif "wellfound" in folder.name|lower %}
+                                            <i class="fas fa-handshake text-xl text-[#ff6154]"></i>
+                                        {% else %}
+                                            <i class="fas fa-folder-open text-xl text-[#eab308]"></i>
+                                        {% endif %}
                                     </div>
                                     <div>
                                         <div class="flex items-center gap-2">
@@ -352,23 +551,26 @@
                                                 <span>Rename</span>
                                             </button>
                                         </div>
-                                        <p class="text-xs text-gray-700 font-medium">All job links and details tracked under <strong class="text-black" id="pane-folder-subname-{{ folder.pk }}">{{ folder.name }}</strong></p>
+                                        <p class="text-xs text-gray-700 font-medium">All applications and job links organized under <strong class="text-black" id="pane-folder-subname-{{ folder.pk }}">{{ folder.name }}</strong></p>
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-2">
+                                    <span class="badge text-xs font-bold py-1 px-2.5">
+                                        {{ folder.distinct_dates_count }} Active Date{{ folder.distinct_dates_count|pluralize }}
+                                    </span>
                                     <button type="button" class="btn-primary text-xs cursor-pointer" onclick="toggleAddJobForm('{{ folder.pk }}')">
                                         <i class="fas fa-plus text-white"></i>
-                                        <span>+ Add Job to {{ folder.name }}</span>
+                                        <span>Add Job to {{ folder.name }}</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Inline Add Job Form -->
+                            <!-- Inline Add Job Form (With Date Applied input) -->
                             <div id="add-job-form-box-{{ folder.pk }}" class="hidden mb-6 p-5 rounded-xl bg-[#faf8f3] border-2 border-black shadow-[2px_2px_0px_#000000] transition-all duration-150">
                                 <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-black">
                                     <h4 class="text-sm font-bold text-black flex items-center gap-2">
                                         <i class="fas fa-plus-circle text-emerald-600 text-xs"></i>
-                                        <span>Add New Job to {{ folder.name }}</span>
+                                        <span>Add New Job Application to {{ folder.name }}</span>
                                     </h4>
                                     <button type="button" class="text-xs text-black hover:opacity-60 cursor-pointer" onclick="toggleAddJobForm('{{ folder.pk }}')">
                                         <i class="fas fa-times"></i>
@@ -377,15 +579,25 @@
                                 <form method="post" action="{% url 'job_create' %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="folder" value="{{ folder.pk }}">
-                                    <input type="hidden" name="application_date" value="{% now 'Y-m-d' %}">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                    
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+                                        <div>
+                                            <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">
+                                                <i class="far fa-calendar-alt mr-1"></i> Date Applied *
+                                            </label>
+                                            <input type="date" 
+                                                   name="application_date" 
+                                                   value="{% now 'Y-m-d' %}" 
+                                                   class="input py-2 text-xs font-semibold" 
+                                                   required>
+                                        </div>
                                         <div>
                                             <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Organization *</label>
                                             <input type="text" name="company_name" class="input py-2 text-xs" placeholder="e.g. Google, Deloitte, Stripe" required>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Role / Job Title *</label>
-                                            <input type="text" name="job_title" class="input py-2 text-xs" placeholder="e.g. Frontend Engineer, Product Manager" required>
+                                            <input type="text" name="job_title" class="input py-2 text-xs" placeholder="e.g. Frontend Engineer, AI Engineer" required>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Job Link (URL)</label>
@@ -396,78 +608,152 @@
                                             <select name="status" class="input py-2 text-xs">
                                                 <option value="Applied" selected>Applied</option>
                                                 <option value="Interview">Interview</option>
-                                                <option value="Under Consideration">Under Consideration</option>
+                                                <option value="Und Con">Und Con</option>
                                                 <option value="Offer">Offer</option>
                                                 <option value="Rejected">Rejected</option>
                                                 <option value="Interested">Interested</option>
                                             </select>
                                         </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Notes / Description</label>
+                                            <input type="text" name="notes" class="input py-2 text-xs" placeholder="Recruiter name, referral note, or salary...">
+                                        </div>
                                     </div>
-                                    <div class="mb-4">
-                                        <label class="block text-xs font-bold text-black uppercase tracking-wider mb-1">Notes / Description</label>
-                                        <input type="text" name="notes" class="input py-2 text-xs" placeholder="Recruiter name, referral note, or interview round notes...">
-                                    </div>
-                                    <div class="flex justify-end space-x-2">
+                                    <div class="flex justify-end space-x-2 pt-2 border-t border-black/15">
                                         <button type="button" class="btn-secondary text-xs py-1.5 px-3 cursor-pointer" onclick="toggleAddJobForm('{{ folder.pk }}')">Cancel</button>
                                         <button type="submit" class="btn-primary text-xs py-1.5 px-4 cursor-pointer">Save Job</button>
                                     </div>
                                 </form>
                             </div>
 
-                            <!-- Jobs Table / Links -->
+                            <!-- Jobs Grouped by Date -->
                             {% if folder.applications.all %}
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left">
-                                        <thead>
-                                            <tr class="border-b-2 border-black">
-                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Organization</th>
-                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Role</th>
-                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Status</th>
-                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Job Link</th>
-                                                <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider text-right">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for job in folder.applications.all %}
-                                                <tr class="border-b border-black/15 hover:bg-[#faf8f3] transition-colors duration-150">
-                                                    <td class="py-3.5 px-3 text-sm font-bold text-black">
-                                                        {{ job.company_name }}
-                                                        {% if job.notes %}
-                                                            <div class="text-[11px] text-gray-600 font-normal truncate max-w-xs">{{ job.notes }}</div>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td class="py-3.5 px-3 text-sm text-black font-medium">{{ job.job_title }}</td>
-                                                    <td class="py-3.5 px-3">
-                                                        <span class="badge text-xs {{ job.status_badge_class }}">
-                                                            {{ job.status }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="py-3.5 px-3 text-sm">
-                                                        {% if job.job_url %}
-                                                            <a href="{{ job.job_url }}" target="_blank" rel="noopener" 
-                                                               class="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline font-bold text-xs">
-                                                                <i class="fas fa-external-link-alt mr-1 text-blue-600 text-[10px]"></i>
-                                                                <span>Open Link</span>
-                                                            </a>
-                                                        {% else %}
-                                                            <span class="text-gray-500 text-xs">No Link</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td class="py-3.5 px-3 text-right whitespace-nowrap">
-                                                        <a href="/my-jobs/edit/{{ job.pk }}/" class="text-blue-600 hover:text-blue-800 text-xs font-bold mr-3 inline-flex items-center gap-1" title="Edit">
-                                                            <i class="fas fa-edit"></i> Edit
-                                                        </a>
-                                                        <button type="button" 
-                                                                class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1" 
-                                                                onclick="openDeleteConfirm('/my-jobs/delete/{{ job.pk }}/', '{{ job.company_name|escapejs }} - {{ job.job_title|escapejs }}', 'job')" 
-                                                                title="Delete">
-                                                            <i class="fas fa-trash"></i> Delete
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+                                {% regroup folder.applications.all by application_date as jobs_by_date %}
+                                
+                                <!-- Date Classification Filter Bar -->
+                                <div class="mb-5 p-3 rounded-xl bg-[#f4efe6] border-2 border-black flex flex-wrap items-center justify-between gap-2 shadow-[1px_1px_0px_#000000]">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-filter text-black text-xs"></i>
+                                        <span class="text-xs font-bold text-black uppercase tracking-wider">Classify by Date:</span>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-1.5 date-filter-chips-container" id="date-chips-{{ folder.pk }}">
+                                        <button type="button" 
+                                                class="date-filter-chip active-date-chip text-xs font-bold py-1 px-2.5 rounded-lg border-2 border-black bg-black text-white cursor-pointer transition-all shadow-[1px_1px_0px_#000000]"
+                                                onclick="filterFolderDate('{{ folder.pk }}', 'all', this)">
+                                            All Dates ({{ folder.applications.count }})
+                                        </button>
+                                        {% for date_group in jobs_by_date %}
+                                            <button type="button" 
+                                                    class="date-filter-chip text-xs font-bold py-1 px-2.5 rounded-lg border-2 border-black bg-white hover:bg-[#e8e2d5] text-black cursor-pointer transition-all shadow-[1px_1px_0px_#000000]"
+                                                    onclick="filterFolderDate('{{ folder.pk }}', '{{ date_group.grouper|date:'Y-m-d' }}', this)">
+                                                <i class="far fa-calendar-alt text-[10px] mr-1"></i>
+                                                {{ date_group.grouper|date:"M d, Y" }}
+                                                <span class="ml-1 px-1.5 py-0.5 rounded-full bg-black/10 text-[10px] font-mono">{{ date_group.list|length }}</span>
+                                            </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Date Group Section Cards -->
+                                <div class="space-y-6" id="date-sections-container-{{ folder.pk }}">
+                                    {% for date_group in jobs_by_date %}
+                                        <div class="date-group-card-{{ folder.pk }} border-2 border-black rounded-xl overflow-hidden shadow-[2px_2px_0px_#000000] bg-white transition-all duration-150"
+                                             data-date="{{ date_group.grouper|date:'Y-m-d' }}">
+                                            
+                                            <!-- Date Header Banner -->
+                                            <div class="bg-[#f4efe6] px-4 py-3 border-b-2 border-black flex flex-wrap items-center justify-between gap-2">
+                                                <div class="flex items-center space-x-2.5">
+                                                    <div class="w-8 h-8 rounded-lg bg-white border-2 border-black flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                                                        <i class="far fa-calendar-check text-black text-sm"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="text-sm font-bold text-black">
+                                                                {{ date_group.grouper|date:"l, F j, Y" }}
+                                                            </span>
+                                                            {% if date_group.grouper == today %}
+                                                                <span class="badge text-[10px] bg-emerald-100 text-emerald-800 border-emerald-400 font-bold uppercase py-0.5 px-2">
+                                                                    Today
+                                                                </span>
+                                                            {% endif %}
+                                                        </div>
+                                                        <span class="text-[11px] text-gray-600 font-medium">Applied on this day</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="badge text-xs font-bold py-1 px-3 bg-black text-white shadow-[1px_1px_0px_#000000]">
+                                                        <i class="fas fa-briefcase text-xs mr-1.5 text-[#eab308]"></i>
+                                                        {{ date_group.list|length }} job{{ date_group.list|length|pluralize }} applied
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Jobs Table with Date Column -->
+                                            <div class="overflow-x-auto">
+                                                <table class="w-full text-left">
+                                                    <thead>
+                                                        <tr class="border-b border-black/20 bg-[#faf8f3]">
+                                                            <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider w-32">
+                                                                <i class="far fa-calendar-alt mr-1"></i> Date
+                                                            </th>
+                                                            <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Organization</th>
+                                                            <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Role</th>
+                                                            <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Status</th>
+                                                            <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Job Link</th>
+                                                            <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider text-right">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for job in date_group.list %}
+                                                            <tr class="border-b border-black/10 hover:bg-[#faf8f3] transition-colors duration-150">
+                                                                <td class="py-3 px-3 text-xs whitespace-nowrap">
+                                                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#f4efe6] border border-black/20 font-semibold text-black text-[11px]">
+                                                                        <i class="far fa-calendar text-gray-600 text-[10px]"></i>
+                                                                        {{ job.application_date|date:"M d, Y" }}
+                                                                    </span>
+                                                                </td>
+                                                                <td class="py-3 px-3 text-sm font-bold text-black">
+                                                                    {{ job.company_name }}
+                                                                    {% if job.notes %}
+                                                                        <div class="text-[11px] text-gray-600 font-normal truncate max-w-xs">{{ job.notes }}</div>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td class="py-3 px-3 text-sm text-black font-medium">{{ job.job_title }}</td>
+                                                                <td class="py-3 px-3">
+                                                                    <span class="badge text-xs {{ job.status_badge_class }}">
+                                                                        {{ job.status }}
+                                                                    </span>
+                                                                </td>
+                                                                <td class="py-3 px-3 text-sm">
+                                                                    {% if job.job_url %}
+                                                                        <a href="{{ job.job_url }}" target="_blank" rel="noopener"
+                                                                           class="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline font-bold text-xs">
+                                                                            <i class="fas fa-external-link-alt mr-1 text-blue-600 text-[10px]"></i>
+                                                                            <span>Open Link</span>
+                                                                        </a>
+                                                                    {% else %}
+                                                                        <span class="text-gray-500 text-xs">No Link</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td class="py-3 px-3 text-right whitespace-nowrap">
+                                                                    <a href="/my-jobs/edit/{{ job.pk }}/" class="text-blue-600 hover:text-blue-800 text-xs font-bold mr-3 inline-flex items-center gap-1" title="Edit">
+                                                                        <i class="fas fa-edit"></i> Edit
+                                                                    </a>
+                                                                    <button type="button"
+                                                                            class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1"
+                                                                            onclick="openDeleteConfirm('/my-jobs/delete/{{ job.pk }}/', '{{ job.company_name|escapejs }} - {{ job.job_title|escapejs }}', 'job')"
+                                                                            title="Delete">
+                                                                        <i class="fas fa-trash"></i> Delete
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
                                 </div>
                             {% else %}
                                 <div class="py-12 text-center text-sm text-gray-700">
@@ -475,7 +761,7 @@
                                         <i class="fas fa-link text-blue-600"></i>
                                     </div>
                                     <p class="font-bold text-black mb-1">No jobs inside <strong>{{ folder.name }}</strong> yet.</p>
-                                    <p class="text-xs text-gray-600 mb-4 font-medium">Add your applied links and roles to track them here.</p>
+                                    <p class="text-xs text-gray-600 mb-4 font-medium">Add your applied links and roles with date to track and classify them here.</p>
                                     <button type="button" class="btn-primary text-xs cursor-pointer" onclick="toggleAddJobForm('{{ folder.pk }}')">
                                         <i class="fas fa-plus text-white"></i>
                                         <span>Add First Job Link</span>
@@ -495,53 +781,131 @@
                             <div class="flex items-center justify-between pb-4 border-b-2 border-black mb-6">
                                 <div>
                                     <h2 class="text-xl font-bold text-black">Uncategorized Applications</h2>
-                                    <p class="text-xs text-gray-700 font-medium">Jobs not tied to a specific folder</p>
+                                    <p class="text-xs text-gray-700 font-medium">Jobs not tied to a specific App folder</p>
+                                </div>
+                                <span class="badge text-xs font-bold py-1 px-3">
+                                    {{ unassigned_jobs|length }} Job{{ unassigned_jobs|length|pluralize }}
+                                </span>
+                            </div>
+
+                            {% regroup unassigned_jobs by application_date as unassigned_jobs_by_date %}
+                            
+                            <!-- Date Filter Chips for Unassigned -->
+                            <div class="mb-5 p-3 rounded-xl bg-[#f4efe6] border-2 border-black flex flex-wrap items-center justify-between gap-2 shadow-[1px_1px_0px_#000000]">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-filter text-black text-xs"></i>
+                                    <span class="text-xs font-bold text-black uppercase tracking-wider">Classify by Date:</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-1.5 date-filter-chips-container" id="date-chips-unassigned">
+                                    <button type="button" 
+                                            class="date-filter-chip active-date-chip text-xs font-bold py-1 px-2.5 rounded-lg border-2 border-black bg-black text-white cursor-pointer transition-all shadow-[1px_1px_0px_#000000]"
+                                            onclick="filterFolderDate('unassigned', 'all', this)">
+                                        All Dates ({{ unassigned_jobs|length }})
+                                    </button>
+                                    {% for date_group in unassigned_jobs_by_date %}
+                                        <button type="button" 
+                                                class="date-filter-chip text-xs font-bold py-1 px-2.5 rounded-lg border-2 border-black bg-white hover:bg-[#e8e2d5] text-black cursor-pointer transition-all shadow-[1px_1px_0px_#000000]"
+                                                onclick="filterFolderDate('unassigned', '{{ date_group.grouper|date:'Y-m-d' }}', this)">
+                                            <i class="far fa-calendar-alt text-[10px] mr-1"></i>
+                                            {{ date_group.grouper|date:"M d, Y" }}
+                                            <span class="ml-1 px-1.5 py-0.5 rounded-full bg-black/10 text-[10px] font-mono">{{ date_group.list|length }}</span>
+                                        </button>
+                                    {% endfor %}
                                 </div>
                             </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left">
-                                    <thead>
-                                        <tr class="border-b-2 border-black">
-                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Organization</th>
-                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Role</th>
-                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Status</th>
-                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Job Link</th>
-                                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for job in unassigned_jobs %}
-                                            <tr class="border-b border-black/15 hover:bg-[#faf8f3] transition-colors duration-150">
-                                                <td class="py-3 px-3 text-sm font-bold text-black">{{ job.company_name }}</td>
-                                                <td class="py-3 px-3 text-sm text-black font-medium">{{ job.job_title }}</td>
-                                                <td class="py-3 px-3">
-                                                    <span class="badge text-xs {{ job.status_badge_class }}">
-                                                        {{ job.status }}
-                                                    </span>
-                                                </td>
-                                                <td class="py-3 px-3 text-sm">
-                                                    {% if job.job_url %}
-                                                        <a href="{{ job.job_url }}" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 hover:underline text-xs font-bold">
-                                                            <i class="fas fa-external-link-alt mr-1 text-blue-600 text-[10px]"></i> View Job
-                                                        </a>
-                                                    {% else %}
-                                                        <span class="text-gray-500 text-xs">—</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td class="py-3 px-3 text-right">
-                                                    <a href="/my-jobs/edit/{{ job.pk }}/" class="text-blue-600 hover:text-blue-800 text-xs font-bold mr-3 inline-flex items-center gap-1">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                    <button type="button" 
-                                                            class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1" 
-                                                            onclick="openDeleteConfirm('/my-jobs/delete/{{ job.pk }}/', '{{ job.company_name|escapejs }} - {{ job.job_title|escapejs }}', 'job')">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+
+                            <!-- Date Group Sections -->
+                            <div class="space-y-6">
+                                {% for date_group in unassigned_jobs_by_date %}
+                                    <div class="date-group-card-unassigned border-2 border-black rounded-xl overflow-hidden shadow-[2px_2px_0px_#000000] bg-white transition-all duration-150"
+                                         data-date="{{ date_group.grouper|date:'Y-m-d' }}">
+                                        
+                                        <!-- Date Header Banner -->
+                                        <div class="bg-[#f4efe6] px-4 py-3 border-b-2 border-black flex flex-wrap items-center justify-between gap-2">
+                                            <div class="flex items-center space-x-2.5">
+                                                <div class="w-8 h-8 rounded-lg bg-white border-2 border-black flex items-center justify-center shadow-[1px_1px_0px_#000000]">
+                                                    <i class="far fa-calendar-check text-black text-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-sm font-bold text-black">
+                                                            {{ date_group.grouper|date:"l, F j, Y" }}
+                                                        </span>
+                                                        {% if date_group.grouper == today %}
+                                                            <span class="badge text-[10px] bg-emerald-100 text-emerald-800 border-emerald-400 font-bold uppercase py-0.5 px-2">
+                                                                Today
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <span class="text-[11px] text-gray-600 font-medium">Applied on this day</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center space-x-2">
+                                                <span class="badge text-xs font-bold py-1 px-3 bg-black text-white shadow-[1px_1px_0px_#000000]">
+                                                    <i class="fas fa-briefcase text-xs mr-1.5 text-[#eab308]"></i>
+                                                    {{ date_group.list|length }} job{{ date_group.list|length|pluralize }} applied
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Table with Date Column -->
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-left">
+                                                <thead>
+                                                    <tr class="border-b border-black/20 bg-[#faf8f3]">
+                                                        <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider w-32">
+                                                            <i class="far fa-calendar-alt mr-1"></i> Date
+                                                        </th>
+                                                        <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Organization</th>
+                                                        <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Role</th>
+                                                        <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Status</th>
+                                                        <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider">Job Link</th>
+                                                        <th class="py-2.5 px-3 text-[11px] font-bold text-black uppercase tracking-wider text-right">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for job in date_group.list %}
+                                                        <tr class="border-b border-black/10 hover:bg-[#faf8f3] transition-colors duration-150">
+                                                            <td class="py-3 px-3 text-xs whitespace-nowrap">
+                                                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#f4efe6] border border-black/20 font-semibold text-black text-[11px]">
+                                                                    <i class="far fa-calendar text-gray-600 text-[10px]"></i>
+                                                                    {{ job.application_date|date:"M d, Y" }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="py-3 px-3 text-sm font-bold text-black">{{ job.company_name }}</td>
+                                                            <td class="py-3 px-3 text-sm text-black font-medium">{{ job.job_title }}</td>
+                                                            <td class="py-3 px-3">
+                                                                <span class="badge text-xs {{ job.status_badge_class }}">
+                                                                    {{ job.status }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="py-3 px-3 text-sm">
+                                                                {% if job.job_url %}
+                                                                    <a href="{{ job.job_url }}" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 hover:underline text-xs font-bold">
+                                                                        <i class="fas fa-external-link-alt mr-1 text-blue-600 text-[10px]"></i> View Job
+                                                                    </a>
+                                                                {% else %}
+                                                                    <span class="text-gray-500 text-xs">—</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="py-3 px-3 text-right whitespace-nowrap">
+                                                                <a href="/my-jobs/edit/{{ job.pk }}/" class="text-blue-600 hover:text-blue-800 text-xs font-bold mr-3 inline-flex items-center gap-1">
+                                                                    <i class="fas fa-edit"></i> Edit
+                                                                </a>
+                                                                <button type="button"
+                                                                        class="text-red-600 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1"
+                                                                        onclick="openDeleteConfirm('/my-jobs/delete/{{ job.pk }}/', '{{ job.company_name|escapejs }} - {{ job.job_title|escapejs }}', 'job')">
+                                                                    <i class="fas fa-trash"></i> Delete
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
@@ -554,7 +918,7 @@
                     </div>
                     <h3 class="text-lg font-bold text-black mb-1">Select a folder on the left (35%)</h3>
                     <p class="text-sm text-gray-700 mb-4 max-w-sm mx-auto font-medium">
-                        Click on any App folder in the list on the left to see its job links, role, organization, and status here.
+                        Click on any App folder in the list on the left to see its applications organized and classified by date.
                     </p>
                 </div>
 
@@ -650,6 +1014,28 @@ function toggleAddJobForm(folderId) {
     }
 }
 
+// Filter jobs by date inside a specific folder
+function filterFolderDate(folderId, targetDate, btn) {
+    const container = document.getElementById('date-chips-' + folderId);
+    if (container && btn) {
+        container.querySelectorAll('.date-filter-chip').forEach(function(b) {
+            b.classList.remove('active-date-chip', 'bg-black', 'text-white');
+            b.classList.add('bg-white', 'text-black');
+        });
+        btn.classList.add('active-date-chip', 'bg-black', 'text-white');
+        btn.classList.remove('bg-white', 'text-black');
+    }
+
+    const cards = document.querySelectorAll('.date-group-card-' + folderId);
+    cards.forEach(function(card) {
+        if (targetDate === 'all' || card.getAttribute('data-date') === targetDate) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+}
+
 // Open split view with slow, smooth and graceful transition
 function openFolderSplit(folderId, folderName) {
     const allFoldersView = document.getElementById('all-folders-view');
@@ -657,19 +1043,19 @@ function openFolderSplit(folderId, folderName) {
 
     if (allFoldersView && !allFoldersView.classList.contains('hidden')) {
         allFoldersView.style.opacity = '0';
-        allFoldersView.style.transform = 'translateY(6px)';
+        allFoldersView.style.transform = 'translateY(12px)';
         setTimeout(function() {
             allFoldersView.classList.add('hidden');
             if (splitScreenView) {
                 splitScreenView.classList.remove('hidden');
                 splitScreenView.style.opacity = '0';
-                splitScreenView.style.transform = 'translateY(6px)';
+                splitScreenView.style.transform = 'translateY(12px)';
                 void splitScreenView.offsetWidth;
                 splitScreenView.style.opacity = '1';
                 splitScreenView.style.transform = 'translateY(0)';
                 switchFolderTab(folderId, folderName);
             }
-        }, 160);
+        }, 220);
     } else if (splitScreenView) {
         splitScreenView.classList.remove('hidden');
         splitScreenView.style.opacity = '1';
@@ -720,18 +1106,18 @@ function closeFolderSplit() {
 
     if (splitScreenView && !splitScreenView.classList.contains('hidden')) {
         splitScreenView.style.opacity = '0';
-        splitScreenView.style.transform = 'translateY(6px)';
+        splitScreenView.style.transform = 'translateY(12px)';
         setTimeout(function() {
             splitScreenView.classList.add('hidden');
             if (allFoldersView) {
                 allFoldersView.classList.remove('hidden');
                 allFoldersView.style.opacity = '0';
-                allFoldersView.style.transform = 'translateY(6px)';
+                allFoldersView.style.transform = 'translateY(12px)';
                 void allFoldersView.offsetWidth;
                 allFoldersView.style.opacity = '1';
                 allFoldersView.style.transform = 'translateY(0)';
             }
-        }, 160);
+        }, 220);
     } else if (allFoldersView) {
         allFoldersView.classList.remove('hidden');
         allFoldersView.style.opacity = '1';

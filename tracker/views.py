@@ -60,8 +60,13 @@ def dashboard_view(request):
     # Recent applications
     recent_jobs = jobs.order_by("-updated_at", "-created_at")[:10]
     
+    today = timezone.now().date()
+    today_applied_count = jobs.filter(application_date=today).count()
+
     context = {
         "user": user,
+        "today": today,
+        "today_applied_count": today_applied_count,
         "total_jobs": total_jobs,
         "applied_count": applied_count,
         "interview_count": interview_count,
@@ -77,6 +82,7 @@ def dashboard_view(request):
 @login_required
 def jobs_view(request):
     user = request.user
+    today = timezone.now().date()
 
     # Fetch all folders belonging to user with their applications
     folders = (
@@ -86,8 +92,23 @@ def jobs_view(request):
     )
     
     # Applications without a folder
-    unassigned_jobs = JobApplication.objects.filter(user=user, folder__isnull=True)
-    total_jobs = JobApplication.objects.filter(user=user).count()
+    unassigned_jobs = list(JobApplication.objects.filter(user=user, folder__isnull=True).order_by("-application_date", "-created_at"))
+    all_jobs = list(JobApplication.objects.filter(user=user).select_related("folder").order_by("-application_date", "-created_at"))
+    total_jobs = len(all_jobs)
+    today_total_jobs = sum(1 for j in all_jobs if j.application_date == today)
+
+    # Enrich folders with latest date, today's count, distinct dates
+    for folder in folders:
+        apps = folder.applications.all()
+        dates = [a.application_date for a in apps if a.application_date]
+        folder.latest_application_date = max(dates) if dates else None
+        folder.today_applications_count = sum(1 for a in apps if a.application_date == today)
+        folder.distinct_dates_count = len(set(dates))
+
+    unassigned_dates = [a.application_date for a in unassigned_jobs if a.application_date]
+    unassigned_latest_date = max(unassigned_dates) if unassigned_dates else None
+    unassigned_today_count = sum(1 for a in unassigned_jobs if a.application_date == today)
+    unassigned_distinct_dates = len(set(unassigned_dates))
 
     selected_folder_id = request.GET.get("folder")
     selected_folder = None
@@ -102,8 +123,14 @@ def jobs_view(request):
 
     context = {
         "user": user,
+        "today": today,
+        "today_total_jobs": today_total_jobs,
+        "all_jobs": all_jobs,
         "folders": folders,
         "unassigned_jobs": unassigned_jobs,
+        "unassigned_latest_date": unassigned_latest_date,
+        "unassigned_today_count": unassigned_today_count,
+        "unassigned_distinct_dates": unassigned_distinct_dates,
         "total_jobs": total_jobs,
         "selected_folder": selected_folder,
         "selected_folder_id": selected_folder_id if selected_folder else "",

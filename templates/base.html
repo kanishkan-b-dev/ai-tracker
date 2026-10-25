@@ -25,9 +25,11 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Sandal White Linen Background with Hardware-Accelerated Native 120 FPS Scrolling */
+        /* Sandal White Linen Background with Smooth Momentum Scrolling */
         html {
             background-color: #f7f4ee !important;
+            scroll-behavior: smooth !important;
+            -webkit-overflow-scrolling: touch;
             overscroll-behavior-y: none;
         }
 
@@ -39,28 +41,23 @@
             min-height: 100vh;
             overflow-x: hidden;
             text-rendering: optimizeLegibility;
+            scroll-behavior: smooth;
         }
 
         body :not(i) {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         }
 
-        /* 120 FPS Locked Scroll Optimization: Temporarily disable hover repaints while scrolling */
-        body.is-scrolling,
-        body.is-scrolling * {
-            pointer-events: none !important;
+        /* Smooth Momentum Scrolling Across All Containers */
+        * {
+            scroll-behavior: smooth;
         }
 
-        body.is-scrolling .sidebar,
-        body.is-scrolling .top-nav {
-            pointer-events: auto !important;
-        }
-
-        /* Slow, Graceful, and Buttery Smooth Page Switching Transitions Across Entire Website */
+        /* Slow, Graceful, and Buttery Smooth Page Switching Transitions (1 to 1.5s Duration) */
         @keyframes pageFadeIn {
             0% {
                 opacity: 0;
-                transform: translateY(8px);
+                transform: translateY(24px);
             }
 
             100% {
@@ -77,7 +74,7 @@
 
             100% {
                 opacity: 0;
-                transform: translateY(-8px);
+                transform: translateY(-16px);
             }
         }
 
@@ -87,15 +84,19 @@
             padding: 2rem;
             background-color: #f7f4ee !important;
             min-height: calc(100vh - 64px);
-            animation: pageFadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: pageFadeIn 1.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             transform: translateZ(0);
             will-change: opacity, transform;
             transition: margin-left 0.35s cubic-bezier(0.22, 1, 0.36, 1), padding 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
         }
 
         .main-content.page-exiting {
-            animation: pageFadeOut 0.26s cubic-bezier(0.32, 0, 0.67, 0) forwards !important;
+            animation: pageFadeOut 0.45s cubic-bezier(0.3, 0, 0.8, 0.15) forwards !important;
             pointer-events: none;
+        }
+
+        .main-content.page-entering {
+            animation: pageFadeIn 1.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
         }
 
         /* Sandal White Sidebar with Crisp Black Border and GPU Compositing Layer */
@@ -794,42 +795,135 @@
     </main>
 
     <script>
-        // Locked High-FPS Native Scroll Optimizer: suspends hover repaints during scroll events
-        let isScrollingTimer = null;
-        window.addEventListener('scroll', function () {
-            if (!document.body.classList.contains('is-scrolling')) {
-                document.body.classList.add('is-scrolling');
+        // Seamless, Slow and Graceful Page Navigation (Works Flawlessly on Render.com & Localhost)
+        async function navigateToPage(url, pushState = true) {
+            const main = document.getElementById('main-content');
+            if (!main) {
+                window.location.href = url;
+                return;
             }
-            clearTimeout(isScrollingTimer);
-            isScrollingTimer = setTimeout(function () {
-                document.body.classList.remove('is-scrolling');
-            }, 80);
-        }, { passive: true });
 
-        // Seamless, Slow and Graceful Page-to-Page Navigation Animation
+            // 1. Trigger graceful slow fade-out
+            main.classList.remove('page-entering');
+            main.classList.add('page-exiting');
+
+            try {
+                const startTime = Date.now();
+                const res = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!res.ok || res.redirected) {
+                    window.location.href = res.url || url;
+                    return;
+                }
+
+                const html = await res.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newMain = doc.getElementById('main-content');
+
+                if (!newMain) {
+                    window.location.href = url;
+                    return;
+                }
+
+                // Minimum fade-out duration (450ms) for visible, elegant exit transition
+                const elapsed = Date.now() - startTime;
+                if (elapsed < 450) {
+                    await new Promise(resolve => setTimeout(resolve, 450 - elapsed));
+                }
+
+                // Update document title
+                document.title = doc.title;
+
+                // Update top navbar page title
+                const newTopTitle = doc.querySelector('.top-nav .font-medium');
+                const currentTopTitle = document.querySelector('.top-nav .font-medium');
+                if (newTopTitle && currentTopTitle) {
+                    currentTopTitle.innerHTML = newTopTitle.innerHTML;
+                }
+
+                // Update active state in sidebar navigation
+                const currentNavs = document.querySelectorAll('.sidebar-nav .nav-item');
+                const newNavs = doc.querySelectorAll('.sidebar-nav .nav-item');
+                newNavs.forEach((item, idx) => {
+                    if (currentNavs[idx]) {
+                        currentNavs[idx].className = item.className;
+                    }
+                });
+
+                // Swap content
+                main.innerHTML = newMain.innerHTML;
+
+                // Smooth scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // Update browser history
+                if (pushState) {
+                    window.history.pushState({ path: url }, '', url);
+                }
+
+                // Re-execute scripts inside main-content
+                const scripts = main.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+
+                // Trigger slow, elegant next page fade-in and moving animation (1.25s)
+                main.classList.remove('page-exiting');
+                // Force layout reflow so the animation restarts cleanly
+                void main.offsetWidth;
+                main.classList.add('page-entering');
+                setTimeout(() => {
+                    main.classList.remove('page-entering');
+                }, 1350);
+
+            } catch (err) {
+                // If anything goes wrong, fallback to native browser navigation
+                window.location.href = url;
+            }
+        }
+
+        // Intercept internal page link clicks for seamless transition
         document.addEventListener('click', function (e) {
             const link = e.target.closest('a');
             if (!link) return;
             const href = link.getAttribute('href');
-            if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.target === '_blank' || link.getAttribute('onclick')) return;
+            if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.target === '_blank' || link.getAttribute('onclick') || link.hasAttribute('download')) return;
+            if (href.startsWith('/logout/')) return;
+
             if (href.startsWith('/') || href.startsWith(window.location.origin)) {
                 try {
                     const targetUrl = new URL(link.href, window.location.origin);
-                    if (targetUrl.pathname !== window.location.pathname || targetUrl.search !== window.location.search) {
-                        e.preventDefault();
-                        const main = document.getElementById('main-content');
-                        if (main) {
-                            main.classList.add('page-exiting');
-                            setTimeout(function () {
-                                window.location.href = href;
-                            }, 240);
-                        } else {
-                            window.location.href = href;
+                    if (targetUrl.origin === window.location.origin) {
+                        if (targetUrl.pathname !== window.location.pathname || targetUrl.search !== window.location.search) {
+                            e.preventDefault();
+                            navigateToPage(targetUrl.href, true);
                         }
                     }
                 } catch (err) {
-                    // fallback to normal link navigation
+                    // Fallback to normal navigation
                 }
+            }
+        });
+
+        // Handle browser Back & Forward buttons with smooth fade transition
+        window.addEventListener('popstate', function (e) {
+            if (window.location.pathname === '/my-jobs/' && e.state && e.state.folderId !== undefined) {
+                return; // Let jobs.html split view handler manage folder tab switching
+            }
+            navigateToPage(window.location.href, false);
+        });
+
+        // Ensure page is visible if loaded from browser bfcache
+        window.addEventListener('pageshow', function () {
+            const main = document.getElementById('main-content');
+            if (main) {
+                main.classList.remove('page-exiting');
             }
         });
 

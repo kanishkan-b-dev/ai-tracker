@@ -56,9 +56,45 @@ class TrackerTestSuite(TestCase):
         self.assertContains(res, "Deloitte")
         self.assertContains(res, "AI Engineer")
 
+    def test_jobs_view_groups_folder_applications_by_date_with_counts(self):
+        self.client.login(username="alice", password="password123")
+        JobApplication.objects.create(
+            user=self.user1,
+            folder=self.folder_linkedin,
+            company_name="Microsoft",
+            job_title="Software Engineer",
+            application_date="2026-10-13",
+        )
+        JobApplication.objects.create(
+            user=self.user1,
+            folder=self.folder_linkedin,
+            company_name="Stripe",
+            job_title="Backend Engineer",
+            application_date="2026-10-13",
+        )
+        JobApplication.objects.create(
+            user=self.user1,
+            folder=self.folder_linkedin,
+            company_name="Atlassian",
+            job_title="Platform Engineer",
+            application_date="2026-10-12",
+        )
+
+        response = self.client.get(reverse("my_jobs"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "October 13, 2026")
+        self.assertContains(response, "2 jobs")
+        self.assertContains(response, "October 12, 2026")
+        self.assertContains(response, "1 job")
+        self.assertLess(
+            response.content.index(b"October 13, 2026"),
+            response.content.index(b"October 12, 2026"),
+        )
+
     def test_status_choices_include_under_consideration_not_interviewing(self):
         choices = dict(JobApplication.STATUS_CHOICES)
-        self.assertIn("Under Consideration", choices)
+        self.assertIn("Und Con", choices)
         self.assertNotIn("Interviewing", choices)
 
     def test_quick_add_folder_workflow(self):
@@ -195,3 +231,75 @@ class TrackerTestSuite(TestCase):
             self.assertTrue(is_supabase_configured())
             url = get_supabase_public_url("resume.pdf")
             self.assertEqual(url, "https://xyz.supabase.co/storage/v1/object/public/my-bucket/resume.pdf")
+
+    def test_job_date_column_and_classification_across_dates(self):
+        import datetime
+        self.client.login(username="alice", password="password123")
+        # Add 4 jobs on Oct 25, 2026 (plus self.job1 which defaults to today, giving exactly 5)
+        for i in range(4):
+            JobApplication.objects.create(
+                user=self.user1,
+                folder=self.folder_linkedin,
+                company_name=f"Company25_{i}",
+                job_title=f"Role_{i}",
+                application_date="2026-10-25",
+            )
+        # Add 3 jobs on Oct 26, 2026
+        for i in range(3):
+            JobApplication.objects.create(
+                user=self.user1,
+                folder=self.folder_linkedin,
+                company_name=f"Company26_{i}",
+                job_title=f"Role_{i}",
+                application_date="2026-10-26",
+            )
+
+        res = self.client.get(reverse("my_jobs"))
+        self.assertEqual(res.status_code, 200)
+
+        # Check date headers and counts
+        self.assertContains(res, "October 26, 2026")
+        self.assertContains(res, "3 jobs applied")
+        self.assertContains(res, "October 25, 2026")
+        self.assertContains(res, "5 jobs applied")
+
+        # Check Date column in table headers and rows
+        self.assertContains(res, "Date")
+        self.assertContains(res, "Oct 26, 2026")
+        self.assertContains(res, "Oct 25, 2026")
+
+        # Check order: Oct 26 before Oct 25
+        self.assertLess(
+            res.content.index(b"October 26, 2026"),
+            res.content.index(b"October 25, 2026"),
+        )
+
+        # Check context enrichment
+        linkedin_folder = [f for f in res.context["folders"] if f.name == "LinkedIn"][0]
+        self.assertEqual(linkedin_folder.latest_application_date, datetime.date(2026, 10, 26))
+
+    def test_job_create_with_explicit_date(self):
+        self.client.login(username="alice", password="password123")
+        res = self.client.post(
+            reverse("job_create"),
+            {
+                "company_name": "OpenAI",
+                "job_title": "Research Engineer",
+                "status": "Applied",
+                "application_date": "2026-10-25",
+                "folder": self.folder_linkedin.pk,
+            },
+        )
+        self.assertEqual(res.status_code, 302)
+        import datetime
+        job = JobApplication.objects.filter(company_name="OpenAI").first()
+        self.assertIsNotNone(job)
+        self.assertEqual(job.application_date, datetime.date(2026, 10, 25))
+
+    def test_dashboard_renders_date_column(self):
+        self.client.login(username="alice", password="password123")
+        res = self.client.get(reverse("dashboard"))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Date")
+        self.assertContains(res, "Deloitte")
+

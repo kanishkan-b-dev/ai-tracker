@@ -30,7 +30,14 @@
                 <span class="badge text-[11px] font-bold tracking-wider uppercase py-1 px-2.5">Total Jobs</span>
             </div>
             <div class="mt-auto">
-                <div class="text-3xl font-extrabold text-black leading-none mb-1.5">{{ total_jobs }}</div>
+                <div class="flex items-baseline gap-2 mb-1.5">
+                    <span class="text-3xl font-extrabold text-black leading-none">{{ total_jobs }}</span>
+                    {% if today_applied_count %}
+                        <span class="badge text-[10px] bg-emerald-100 text-emerald-800 border-emerald-400 font-bold py-0.5 px-1.5">
+                            +{{ today_applied_count }} today
+                        </span>
+                    {% endif %}
+                </div>
                 <div class="text-xs text-gray-600 font-medium">Applications logged</div>
             </div>
         </div>
@@ -152,6 +159,9 @@
                 <table class="w-full text-left">
                     <thead>
                         <tr class="border-b-2 border-black">
+                            <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider w-28">
+                                <i class="far fa-calendar-alt mr-1"></i> Date
+                            </th>
                             <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Organization</th>
                             <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Role</th>
                             <th class="py-3 px-3 text-xs font-bold text-black uppercase tracking-wider">Platform / Folder</th>
@@ -163,6 +173,12 @@
                     <tbody>
                         {% for job in recent_jobs %}
                             <tr class="border-b border-black/15 hover:bg-[#faf8f3] transition-colors duration-150">
+                                <td class="py-3.5 px-3 text-xs whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#f4efe6] border border-black/20 font-semibold text-black text-[11px]">
+                                        <i class="far fa-calendar text-gray-600 text-[10px]"></i>
+                                        {{ job.application_date|date:"M d, Y" }}
+                                    </span>
+                                </td>
                                 <td class="py-3.5 px-3 text-sm font-bold text-black">
                                     {{ job.company_name }}
                                     {% if job.notes %}

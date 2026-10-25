@@ -20,7 +20,7 @@ class JobApplication(models.Model):
     STATUS_CHOICES = [
         ("Applied", "Applied"),
         ("Interview", "Interview"),
-        ("Under Consideration", "Under Consideration"),
+        ("Und Con", "Und Con"),
         ("Offer", "Offer"),
         ("Rejected", "Rejected"),
         ("Interested", "Interested"),
@@ -51,7 +51,7 @@ class JobApplication(models.Model):
         mapping = {
             "Applied": "bg-blue-100 text-blue-800 border-blue-200",
             "Interview": "bg-yellow-100 text-yellow-800 border-yellow-200",
-            "Under Consideration": "bg-purple-100 text-purple-800 border-purple-200",
+            "Und Con": "bg-purple-100 text-purple-800 border-purple-200",
             "Offer": "bg-green-100 text-green-800 border-green-200",
             "Rejected": "bg-red-100 text-red-800 border-red-200",
             "Interested": "bg-gray-100 text-gray-800 border-gray-200",

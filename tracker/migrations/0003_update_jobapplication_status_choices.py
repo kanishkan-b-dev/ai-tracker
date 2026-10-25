@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 choices=[
                     ("Applied", "Applied"),
                     ("Interview", "Interview"),
-                    ("Under Consideration", "Under Consideration"),
+                    ("Und Con", "Und Con"),
                     ("Offer", "Offer"),
                     ("Rejected", "Rejected"),
                     ("Interested", "Interested"),
