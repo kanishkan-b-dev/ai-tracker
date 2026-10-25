@@ -45,7 +45,7 @@ def dashboard_view(request):
     jobs = JobApplication.objects.filter(user=user).select_related("folder")
     total_jobs = jobs.count()
     applied_count = jobs.filter(status__iexact="Applied").count()
-    interview_count = jobs.filter(Q(status__icontains="Interview") | Q(status__iexact="Interviewing")).count()
+    interview_count = jobs.filter(status__iexact="Interview").count()
     offer_count = jobs.filter(status__iexact="Offer").count()
     rejected_count = jobs.filter(status__iexact="Rejected").count()
     
@@ -172,9 +172,6 @@ def job_create_view(request):
         if not post_data.get("application_date"):
             from django.utils import timezone
             post_data["application_date"] = timezone.now().date().strftime("%Y-%m-%d")
-        if post_data.get("status") == "Interviewing":
-            post_data["status"] = "Interview"
-
         form = JobApplicationForm(user, post_data)
         if form.is_valid():
             job = form.save(commit=False)
@@ -213,9 +210,6 @@ def job_edit_view(request, pk):
             post_data["application_date"] = (
                 job.application_date.strftime("%Y-%m-%d") if job.application_date else timezone.now().date().strftime("%Y-%m-%d")
             )
-        if post_data.get("status") == "Interviewing":
-            post_data["status"] = "Interview"
-
         form = JobApplicationForm(request.user, post_data, instance=job)
         if form.is_valid():
             saved_job = form.save()

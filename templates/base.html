@@ -41,6 +41,10 @@
             text-rendering: optimizeLegibility;
         }
 
+        body :not(i) {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
         /* 120 FPS Locked Scroll Optimization: Temporarily disable hover repaints while scrolling */
         body.is-scrolling,
         body.is-scrolling * {
@@ -154,6 +158,21 @@
         .top-nav button,
         .top-nav i {
             color: #000000 !important;
+        }
+
+        .session-countdown-card {
+            border: 2px solid #000000;
+            border-radius: 0.85rem;
+            background: #ffffff;
+            box-shadow: 3px 3px 0 #000000;
+        }
+
+        #sessionExpiryDialog[open] {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            margin: 0;
+            transform: translate(-50%, -50%);
         }
 
         /* ==========================================================================
@@ -707,9 +726,10 @@
                     <div class="text-sm font-medium text-white">{{ user.username }}</div>
                     <div class="text-xs text-gray-400">{{ user.email|default:"user@example.com" }}</div>
                 </div>
-                <div class="text-xs font-medium text-black whitespace-nowrap" id="session-countdown"
-                    data-expires-at="{{ request.session.auth_expires_at }}" aria-live="off">
-                    Session ends in <span id="session-countdown-value">15:00</span>
+                <div class="session-countdown-card flex items-center gap-2 px-3 py-1.5 text-black whitespace-nowrap"
+                    id="session-countdown" data-expires-at="{{ request.session.auth_expires_at }}" aria-live="off">
+                    <span class="text-xs font-semibold">Session ends in</span>
+                    <span class="text-sm font-bold tabular-nums" id="session-countdown-value">15:00</span>
                 </div>
                 <a href="/logout/"
                     class="text-gray-400 hover:text-red-400 ml-2 p-1.5 rounded-lg border border-transparent hover:border-white transition-colors"

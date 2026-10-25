@@ -56,6 +56,11 @@ class TrackerTestSuite(TestCase):
         self.assertContains(res, "Deloitte")
         self.assertContains(res, "AI Engineer")
 
+    def test_status_choices_include_under_consideration_not_interviewing(self):
+        choices = dict(JobApplication.STATUS_CHOICES)
+        self.assertIn("Under Consideration", choices)
+        self.assertNotIn("Interviewing", choices)
+
     def test_quick_add_folder_workflow(self):
         self.client.login(username="alice", password="password123")
         # User types "Indeed" and hits Okay
@@ -190,4 +195,3 @@ class TrackerTestSuite(TestCase):
             self.assertTrue(is_supabase_configured())
             url = get_supabase_public_url("resume.pdf")
             self.assertEqual(url, "https://xyz.supabase.co/storage/v1/object/public/my-bucket/resume.pdf")
-

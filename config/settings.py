@@ -181,7 +181,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
-SESSION_COOKIE_AGE = 15 * 60
+SESSION_COOKIE_AGE = 15 * 2
 SESSION_SAVE_EVERY_REQUEST = False
 
 # Email backend (console by default for dev, easily configured via env)

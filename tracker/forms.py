@@ -61,10 +61,7 @@ class JobApplicationForm(forms.ModelForm):
         return date
 
     def clean_status(self):
-        status = self.cleaned_data.get("status", "Applied")
-        if status in ("Interviewing", "Interview"):
-            return "Interview"
-        return status
+        return self.cleaned_data.get("status", "Applied")
 
 
 class LearningEntryForm(forms.ModelForm):

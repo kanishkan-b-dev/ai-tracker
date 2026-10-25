@@ -17,7 +17,7 @@ JobTrack is a full-featured, developer-first job application tracking workspace 
    - Audit activity stream tracking application creation, status transitions, and note updates.
 
 3. **Job Application Management (CRUD)**
-   - Complete workflow: `Interested` &rarr; `Applied` &rarr; `Assessment` &rarr; `Interview` &rarr; `Offer` &rarr; `Rejected` &rarr; `Withdrawn`.
+   - Application statuses: `Interested`, `Under Consideration`, `Applied`, `Interview`, `Offer`, and `Rejected`.
    - Real-time search by company, job title, and skills.
    - Multi-parameter filtering by status, work arrangement (Remote/Hybrid/On-site), priority, and date.
    - In-place quick status dropdown updates with Fetch API.
@@ -51,7 +51,7 @@ JobTrack is a full-featured, developer-first job application tracking workspace 
 ## 🎨 Design System (Adapted from Sanity.io)
 
 - **Color Palette**: Obsidian Void (`#0b0b0b`), Card Surface (`#121214`), High-voltage Orange Accent (`#fc4404`), Tech Cyan (`#38bdf8`), Neon Mint (`#4ade80`).
-- **Typography**: Editorial modern sans-serif (`Plus Jakarta Sans`) paired with technical monospace metadata (`IBM Plex Mono`).
+- **Typography**: Inter throughout the interface, including metadata and form controls.
 - **Signatures**: Sticky glassmorphism navigation, high-contrast monospace badges, 3-button CTA row, and restrained 1px faint border lines.
 - See [`DESIGN.md`](./DESIGN.md) for full token details.
 
